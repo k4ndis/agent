@@ -36,7 +36,7 @@ if uploaded_file is not None:
         else:
             return "Sonstiges"
 
-    df["Kategorie"] = df["Beschreibung"].apply(kategorisieren)
+    df["Kategorie"] = df["beschreibung"].apply(kategorisieren)
 
     st.subheader("Vorschau der Daten")
     st.dataframe(df)
