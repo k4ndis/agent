@@ -1,19 +1,29 @@
 from openai import OpenAI
 
-# GPT-Funktion zur Kategorisierung
 def gpt_kategorie(text: str, api_key: str) -> str:
     client = OpenAI(api_key=api_key)
 
-    prompt = f"Ordne die folgende Transaktion einer passenden Ausgabenkategorie zu (z.B. Lebensmittel, Mobilität, Shopping, Abos, Einkommen, Sonstiges):\n\nBeschreibung: '{text}'\nKategorie:"
+    prompt = f"""
+Ordne folgende Transaktion genau einer Ausgabenkategorie zu:
+- Lebensmittel
+- Mobilität
+- Shopping
+- Abos
+- Einkommen
+- Sonstiges
+
+Transaktion: "{text}"
+Antwort nur mit der Kategorie.
+"""
 
     try:
         response = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "Du bist eine KI zur Kategorisierung von Finanztransaktionen."},
+                {"role": "system", "content": "Du bist ein Finanz-Kategorisierungsassistent."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=50,
+            max_tokens=30,
             temperature=0.2
         )
         return response.choices[0].message.content.strip()
@@ -21,35 +31,45 @@ def gpt_kategorie(text: str, api_key: str) -> str:
         return f"Fehler: {e}"
 
 
-# GPT-Funktion zur Mini-Schufa Score-Auswertung
-def gpt_score_auswertung(transaktionen_df, api_key):
+def gpt_kategorien_batch(beschreibungen: list[str], api_key: str) -> list[str]:
     client = OpenAI(api_key=api_key)
 
-    zusammenfassung = transaktionen_df[["Beschreibung", "Betrag"]].to_string(index=False)
-
     prompt = f"""
-Du bist ein KI-System zur Finanzverhaltensanalyse. Analysiere die folgenden Transaktionen und gib:
-1. Einen Score von 0 bis 100 für finanzielle Zuverlässigkeit
-2. Eine kurze, verständliche Erklärung
+Ordne den folgenden Transaktionen jeweils **eine** Ausgabenkategorie zu:
 
-### Transaktionen:
-{zusammenfassung}
+- Lebensmittel
+- Mobilität
+- Shopping
+- Abos
+- Einkommen
+- Sonstiges
 
-### Format:
-Score: <Zahl>
-Kommentar: <Text>
+Beispielausgabe:
+Shopping  
+Abos  
+Einkommen  
+...
+
+Transaktionen:
+{chr(10).join(beschreibungen)}
+
+Antwort: Nur die Kategorien, eine pro Zeile, in derselben Reihenfolge.
 """
 
     try:
         response = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "Du bist ein fairer, transparenter Finanzanalyst."},
+                {"role": "system", "content": "Du bist ein präziser Finanz-Kategorisierer."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=300,
-            temperature=0.3
+            max_tokens=1000,
+            temperature=0.2
         )
-        return response.choices[0].message.content.strip()
+
+        raw = response.choices[0].message.content.strip()
+        kategorien = [line.strip() for line in raw.splitlines() if line.strip()]
+        return kategorien
+
     except Exception as e:
-        return f"Fehler: {e}"
+        return [f"Fehler: {e}"] * len(beschreibungen)
