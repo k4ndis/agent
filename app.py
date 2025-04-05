@@ -36,7 +36,7 @@ if uploaded_file is not None:
         else:
             return "Sonstiges"
 
-    df["Kategorie"] = df["Beschreibung"].apply(kategorisieren)
+    df["Kategorie"] = df["beschreibung"].apply(kategorisieren)
 
     st.subheader("Vorschau der Daten")
     st.dataframe(df)
@@ -60,7 +60,7 @@ if uploaded_file is not None:
         with st.spinner("GPT analysiert deine Transaktionen..."):
             df["GPT Kategorie"] = df["beschreibung"].apply(lambda x: gpt_kategorie(x, api_key))
         st.success("GPT-Kategorisierung abgeschlossen.")
-        st.dataframe(df[["Beschreibung", "Betrag", "GPT Kategorie"]])
+        st.dataframe(df[["beschreibung", "Betrag", "GPT Kategorie"]])
 
 
         # 🧠 Mini-Schufa-Analyse durch GPT
