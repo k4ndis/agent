@@ -1,3 +1,4 @@
+from importer import parse_transaktion_datei
 from gpt_kategorisierung import gpt_kategorie, gpt_score_auswertung
 
 
@@ -14,7 +15,10 @@ st.write("Lade deine CSV-Datei hoch (mit Spalten: Datum, Beschreibung, Betrag):"
 uploaded_file = st.file_uploader("CSV-Datei auswählen", type=["csv"])
 
 if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
+    df = parse_transaktion_datei(uploaded_file)
+    if df is not None:
+        st.dataframe(df)
+
 
     # Einfache Regel-basierte Kategorisierung
     def kategorisieren(beschreibung):
@@ -32,7 +36,7 @@ if uploaded_file is not None:
         else:
             return "Sonstiges"
 
-    df["Kategorie"] = df["Beschreibung"].apply(kategorisieren)
+    df["Kategorie"] = df["beschreibung"].apply(kategorisieren)
 
     st.subheader("Vorschau der Daten")
     st.dataframe(df)
