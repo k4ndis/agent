@@ -9,11 +9,13 @@ def parse_transaktion_datei(file):
             st.error(f"Fehler beim Einlesen der CSV-Datei: {e}")
             return None
 
-        if "Buchungstag" in df.columns and "Verwendungszweck" in df.columns:
+        # Dynamische Spaltenerkennung (z. B. Sparkasse)
+        cols = [col.lower() for col in df.columns]
+        if "buchungstag" in cols and "verwendungszweck" in cols:
             return konvertiere_sparkasse(df)
-        else:
-            st.error("Unbekanntes CSV-Format. Bitte prüfe die Spaltennamen.")
-            return None
+
+        st.error("Unbekanntes CSV-Format. Bitte prüfe die Spaltennamen.")
+        return None
 
     else:
         st.error("Dateiformat nicht unterstützt. Bitte lade eine .csv Datei hoch.")
@@ -22,14 +24,12 @@ def parse_transaktion_datei(file):
 def konvertiere_sparkasse(df):
     try:
         df["Buchungstag"] = pd.to_datetime(df["Buchungstag"], format="%d.%m.%y", errors="coerce")
-
         df["Betrag"] = (
             df["Betrag"]
             .str.replace(".", "", regex=False)
             .str.replace(",", ".", regex=False)
             .astype(float)
         )
-
         df["beschreibung"] = (
             df["Buchungstext"].fillna("") + " — " +
             df["Verwendungszweck"].fillna("").str.slice(0, 50)
