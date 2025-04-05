@@ -8,16 +8,17 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Transaktionsanalyse", layout="centered")
 st.title("KI-gestützte Transaktionsanalyse")
 
-st.write("Lade deine CSV-Datei hoch (z. B. Sparkasse Umsatzübersicht):")
+st.write("Lade deine CSV-Datei hoch – Sparkasse, DKB, oder anderes Format:")
 
 uploaded_file = st.file_uploader("CSV-Datei auswählen", type=["csv"])
 
 if uploaded_file is not None:
     df = parse_transaktion_datei(uploaded_file)
+
     if df is not None:
+        st.success("Datei wurde erfolgreich erkannt und verarbeitet.")
         st.dataframe(df)
 
-        # Einfache Regel-basierte Kategorisierung
         def kategorisieren(beschreibung):
             beschreibung = str(beschreibung).lower()
             if "gehalt" in beschreibung:
@@ -35,7 +36,7 @@ if uploaded_file is not None:
 
         df["Kategorie"] = df["beschreibung"].apply(kategorisieren)
 
-        st.subheader("Ausgaben nach Kategorie")
+        st.subheader("📊 Ausgaben nach Kategorie")
         ausgaben = df[df["betrag"] < 0]
         kategorien_summe = ausgaben.groupby("Kategorie")["betrag"].sum().sort_values()
 
@@ -54,13 +55,13 @@ if uploaded_file is not None:
             st.success("GPT-Kategorisierung abgeschlossen.")
             st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
 
-            # 🧠 Mini-Schufa-Analyse durch GPT
             st.subheader("💳 Mini-Schufa Score (Beta)")
-
             if st.button("Finanzverhalten analysieren"):
                 with st.spinner("GPT analysiert dein Finanzverhalten..."):
                     auswertung = gpt_score_auswertung(df, api_key)
                 st.success("Analyse abgeschlossen:")
                 st.text(auswertung)
+    else:
+        st.warning("Datei konnte nicht automatisch verarbeitet werden. Bitte prüfe Format oder Spaltennamen.")
 else:
     st.info("Bitte lade eine Datei hoch.")
