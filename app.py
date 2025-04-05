@@ -1,4 +1,5 @@
-from gpt_kategorisierung import gpt_kategorie
+from gpt_kategorisierung import gpt_kategorie, gpt_score_auswertung
+
 
 import streamlit as st
 import pandas as pd
@@ -57,6 +58,16 @@ if uploaded_file is not None:
         st.success("GPT-Kategorisierung abgeschlossen.")
         st.dataframe(df[["Beschreibung", "Betrag", "GPT Kategorie"]])
 
+
+        # 🧠 Mini-Schufa-Analyse durch GPT
+        st.subheader("💳 Mini-Schufa Score (Beta)")
+
+        if st.button("Finanzverhalten analysieren"):
+            with st.spinner("GPT analysiert dein Finanzverhalten..."):
+                auswertung = gpt_score_auswertung(df, api_key)
+
+            st.success("Analyse abgeschlossen:")
+            st.text(auswertung)
     st.success("Analyse abgeschlossen.")
 else:
     st.info("Bitte lade eine Datei hoch.")
