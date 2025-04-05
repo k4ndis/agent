@@ -1,3 +1,4 @@
+from gpt_kategorisierung import gpt_kategorie
 
 import streamlit as st
 import pandas as pd
@@ -45,6 +46,16 @@ if uploaded_file is not None:
     ax.set_title("Ausgaben nach Kategorie")
     ax.set_xlabel("Summe (€)")
     st.pyplot(fig)
+
+    # GPT-Funktion aktivieren
+    st.subheader("🔍 GPT-Kategorisierung (optional)")
+    api_key = st.text_input("OpenAI API Key eingeben", type="password")
+
+    if api_key:
+        with st.spinner("GPT analysiert deine Transaktionen..."):
+            df["GPT Kategorie"] = df["Beschreibung"].apply(lambda x: gpt_kategorie(x, api_key))
+        st.success("GPT-Kategorisierung abgeschlossen.")
+        st.dataframe(df[["Beschreibung", "Betrag", "GPT Kategorie"]])
 
     st.success("Analyse abgeschlossen.")
 else:
