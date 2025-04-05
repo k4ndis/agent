@@ -1,5 +1,5 @@
 from importer import parse_transaktion_datei
-from gpt_kategorisierung import gpt_kategorie, gpt_score_auswertung
+from gpt_kategorisierung import gpt_kategorie, gpt_kategorien_batch, gpt_score_auswertung
 
 import streamlit as st
 import pandas as pd

@@ -73,3 +73,40 @@ Antwort: Nur die Kategorien, eine pro Zeile, in derselben Reihenfolge.
 
     except Exception as e:
         return [f"Fehler: {e}"] * len(beschreibungen)
+
+def gpt_score_auswertung(df, api_key: str) -> str:
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key)
+
+    beschreibungen = df["beschreibung"].tolist()
+    kategorien = df.get("GPT Kategorie", [])
+
+    zusammenfassung = "\n".join([
+        f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)
+    ])
+
+    prompt = f"""
+Du bist eine KI zur Bewertung von Finanzverhalten.
+
+Hier sind die Transaktionen und ihre GPT-Kategorien:
+
+{zusammenfassung}
+
+Analysiere das Verhalten, erkenne Muster (z. B. viele Abos, hohe Mobilitätskosten) 
+und gib eine Einschätzung zur finanziellen Stabilität und Kreditwürdigkeit ab.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "Du bist ein Finanzanalyst für Kreditwürdigkeit."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=600,
+            temperature=0.4
+        )
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        return f"Fehler bei GPT-Auswertung: {e}"
