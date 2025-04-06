@@ -53,13 +53,13 @@ if not user:
     st.warning("Bitte logge dich ein, um fortzufahren.")
     st.stop()
 
-if not user.get("confirmed_at"):
-   if not user.get("confirmed_at"):
+if not hasattr(user, "confirmed_at") or not user.confirmed_at:
     st.warning("Bitte bestätige deine E-Mail-Adresse über den Link, den wir dir gesendet haben.")
     if st.button("📧 Bestätigungsmail erneut senden"):
-        resend_confirmation_email(user["email"])
+        resend_confirmation_email(user.email)
         st.success("E-Mail wurde erneut versendet.")
     st.stop()
+
 
 # ------------------- HEADER -------------------
 st.markdown("""
