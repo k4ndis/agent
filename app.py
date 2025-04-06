@@ -88,14 +88,29 @@ elif seite == "📈 Visualisierung":
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
     else:
-        df = st.session_state.df
-        ausgaben = df[df["betrag"] < 0]
+        df = st.session_state.df.copy()
+
+        # Nur Ausgaben (negative Beträge)
+        ausgaben = df[df["betrag"] < 0].copy()
+
+        # GPT-Kategorien bereinigen
+        ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\\s*", "", regex=True)
+
+        # Gruppierung und Sortierung
         kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().sort_values()
 
+        # Anzeige als gestutztes Diagramm (Top 10 + Rest)
+        top_kategorien = kategorien_summe.tail(10)
+        rest_summe = kategorien_summe.iloc[:-10].sum()
+        if rest_summe < 0:
+            top_kategorien["Andere"] = rest_summe
+
+        # Visualisierung
         fig, ax = plt.subplots()
-        kategorien_summe.plot(kind="barh", ax=ax)
-        ax.set_title("Ausgaben nach GPT-Kategorie")
+        top_kategorien.plot(kind="barh", ax=ax)
+        ax.set_title("Top-Ausgabenkategorien nach GPT")
         ax.set_xlabel("Summe in EUR")
         st.pyplot(fig)
 
         st.markdown("Letzte Aktualisierung: _automatisch beim GPT-Scan_ ✅")
+
