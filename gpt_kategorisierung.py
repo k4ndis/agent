@@ -69,15 +69,12 @@ Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
 
         raw = response.choices[0].message.content.strip()
 
-        # 🧹 Bereinigen
         kategorien = [line.strip() for line in raw.splitlines() if line.strip()]
 
-        # ⚠️ Wenn GPT zu wenig antwortet → auffüllen
         if len(kategorien) < len(beschreibungen):
             fehlend = len(beschreibungen) - len(kategorien)
             kategorien += ["Sonstiges"] * fehlend
 
-        # 🛑 Wenn GPT zu viele Zeilen gibt → kürzen
         if len(kategorien) > len(beschreibungen):
             kategorien = kategorien[:len(beschreibungen)]
 
@@ -110,16 +107,24 @@ und gib eine Einschätzung zur finanziellen Stabilität und Kreditwürdigkeit ab
 """
 
     try:
+        # Neu: stream=True + längere Antwort
         response = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": "Du bist ein Finanzanalyst für Kreditwürdigkeit."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=600,
-            temperature=0.4
+            max_tokens=1500,
+            temperature=0.4,
+            stream=True
         )
-        return response.choices[0].message.content.strip()
+
+        output = ""
+        for chunk in response:
+            content_piece = chunk.choices[0].delta.content or ""
+            output += content_piece
+
+        return output
 
     except Exception as e:
         return f"Fehler bei GPT-Auswertung: {e}"
