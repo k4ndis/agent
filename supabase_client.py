@@ -40,3 +40,7 @@ def load_reports(user_id: str):
 
 def load_all_reports():
     return supabase.table("reports").select("*").order("created_at", desc=True).execute()
+
+def resend_confirmation_email(email):
+    return supabase.auth.resend(email=email)
+

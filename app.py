@@ -2,7 +2,7 @@ import streamlit as st
 from gpt_kategorisierung import gpt_score_auswertung
 from gpt_batch_async import gpt_kategorien_batch_async
 from importer import parse_transaktion_datei
-from supabase_client import sign_in, sign_up, sign_out, get_user, save_report, load_reports, load_all_reports
+from supabase_client import sign_in, sign_up, sign_out, get_user, save_report, load_reports, load_all_reports, resend_confirmation_email
 import pandas as pd
 import asyncio
 import matplotlib.pyplot as plt
@@ -37,6 +37,20 @@ if st.session_state.user is None:
         else:
             st.error("Registrierung fehlgeschlagen")
 
+    st.stop()
+
+# ------------------- BESTÄTIGUNG PRÜFEN -------------------
+user = get_user()
+if not user:
+    st.warning("Bitte logge dich ein, um fortzufahren.")
+    st.stop()
+
+if not user.get("confirmed_at"):
+   if not user.get("confirmed_at"):
+    st.warning("Bitte bestätige deine E-Mail-Adresse über den Link, den wir dir gesendet haben.")
+    if st.button("📧 Bestätigungsmail erneut senden"):
+        resend_confirmation_email(user["email"])
+        st.success("E-Mail wurde erneut versendet.")
     st.stop()
 
 # ------------------- HEADER -------------------
@@ -144,7 +158,6 @@ elif seite == "📈 Visualisierung":
         df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
         df["monat"] = df["datum"].dt.strftime("%B %Y")
 
-        # Monatsauswahl
         monate_verfügbar = df["monat"].dropna().unique().tolist()
         monate_verfügbar.sort()
         gewählter_monat = st.selectbox("📅 Monat auswählen:", monate_verfügbar)
@@ -155,7 +168,7 @@ elif seite == "📈 Visualisierung":
         if ausgaben.empty:
             st.info("Keine Ausgaben für diesen Monat vorhanden.")
         else:
-            ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\\s*", "", regex=True)
+            ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\s*", "", regex=True)
             kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().sort_values()
             top_kategorien = kategorien_summe.tail(10)
             rest_summe = kategorien_summe.iloc[:-10].sum()
