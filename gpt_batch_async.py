@@ -1,6 +1,16 @@
 import asyncio
+import json
+import os
 from openai import AsyncOpenAI
-import streamlit as st  # ✅ Für Fortschrittsanzeige im Streamlit-UI
+import streamlit as st  # Für Fortschrittsanzeige im Streamlit-UI
+
+# 💾 Cache laden (oder leere Map)
+CACHE_DATEI = "gpt_cache.json"
+if os.path.exists(CACHE_DATEI):
+    with open(CACHE_DATEI, "r", encoding="utf-8") as f:
+        gpt_cache = json.load(f)
+else:
+    gpt_cache = {}
 
 def chunkify(lst, n):
     return [lst[i:i + n] for i in range(0, len(lst), n)]
@@ -44,16 +54,28 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str) ->
     progress = st.progress(0)
     kategorien = []
 
-    for i, chunk in enumerate(chunks):
-        teil_kategorien = await kategorisiere_chunk(chunk, api_key)
-        kategorien.extend(teil_kategorien)
-        progress.progress((i + 1) / len(chunks))
+    nicht_im_cache = [text for text in beschreibungen if text not in gpt_cache]
+    st.info(f"{len(beschreibungen)} Transaktionen insgesamt – {len(nicht_im_cache)} werden neu analysiert")
 
-    # ✅ Korrigieren falls GPT zu viele oder zu wenige liefert
+    i = 0
+    for chunk in chunkify(nicht_im_cache, 40):
+        teil_kategorien = await kategorisiere_chunk(chunk, api_key)
+        for beschreibung, kategorie in zip(chunk, teil_kategorien):
+            gpt_cache[beschreibung] = kategorie
+        i += 1
+        progress.progress(i / len(chunkify(nicht_im_cache, 40)))
+
+    # 💾 Cache speichern
+    with open(CACHE_DATEI, "w", encoding="utf-8") as f:
+        json.dump(gpt_cache, f, ensure_ascii=False, indent=2)
+
+    # 🎯 Ergebnis in richtiger Reihenfolge zurückgeben
+    kategorien = [gpt_cache.get(b, "Sonstiges") for b in beschreibungen]
+
+    # Sicherheitshalber Länge prüfen
     if len(kategorien) > len(beschreibungen):
         kategorien = kategorien[:len(beschreibungen)]
     elif len(kategorien) < len(beschreibungen):
-        fehlend = len(beschreibungen) - len(kategorien)
-        kategorien += ["Sonstiges"] * fehlend
+        kategorien += ["Sonstiges"] * (len(beschreibungen) - len(kategorien))
 
     return kategorien

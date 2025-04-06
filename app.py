@@ -71,7 +71,7 @@ if uploaded_file is not None:
                 with st.spinner("GPT analysiert dein Finanzverhalten..."):
                     auswertung = gpt_score_auswertung(df, api_key)
                 st.success("Analyse abgeschlossen:")
-                st.text(auswertung)
+                st.markdown(auswertung)
     else:
         st.warning("Datei konnte nicht automatisch verarbeitet werden. Bitte prüfe Format oder Spaltennamen.")
 else:
