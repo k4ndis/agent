@@ -1,9 +1,11 @@
 from importer import parse_transaktion_datei
-from gpt_kategorisierung import gpt_kategorie, gpt_kategorien_batch, gpt_score_auswertung
+from gpt_kategorisierung import gpt_kategorie, gpt_score_auswertung
+from gpt_batch_async import gpt_kategorien_batch_async  # ✅ Neuer Import
 
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import asyncio  # ✅ für asynchrone GPT-Verarbeitung
 
 st.set_page_config(page_title="Transaktionsanalyse", layout="centered")
 st.title("KI-gestützte Transaktionsanalyse")
@@ -50,28 +52,17 @@ if uploaded_file is not None:
         api_key = st.text_input("OpenAI API Key eingeben", type="password")
 
         if api_key:
-            from gpt_kategorisierung import gpt_kategorien_batch
-
-            paketgroesse = 100
             alle_beschreibungen = df["beschreibung"].tolist()
-            alle_kategorien = []
 
             with st.spinner("GPT analysiert deine Transaktionen..."):
                 st.info(f"Starte GPT-Analyse für {len(alle_beschreibungen)} Transaktionen...")
-                progress = st.progress(0)
+                kategorien = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key))
 
-                for i in range(0, len(alle_beschreibungen), paketgroesse):
-                    batch = alle_beschreibungen[i:i+paketgroesse]
-                    kategorien = gpt_kategorien_batch(batch, api_key)
-                    alle_kategorien.extend(kategorien)
-                    fortschritt = min((i + paketgroesse) / len(alle_beschreibungen), 1.0)
-                    progress.progress(fortschritt)
-
-            if len(alle_kategorien) != len(df):
-                st.error(f"❌ GPT-Antwort stimmt nicht mit Anzahl der Transaktionen überein: {len(alle_kategorien)} ≠ {len(df)}")
+            if len(kategorien) != len(df):
+                st.error(f"❌ GPT-Antwort stimmt nicht mit Anzahl der Transaktionen überein: {len(kategorien)} ≠ {len(df)}")
                 st.stop()
             else:
-                df["GPT Kategorie"] = alle_kategorien
+                df["GPT Kategorie"] = kategorien
                 st.success("✅ GPT-Kategorisierung abgeschlossen.")
                 st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
 
