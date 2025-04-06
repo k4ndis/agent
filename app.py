@@ -27,7 +27,7 @@ if st.session_state.user is None:
         res = sign_in(email, password)
         if res and res.user:
             st.session_state.user = res.user
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
 
@@ -86,7 +86,7 @@ st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
 if st.sidebar.button("🚪 Logout"):
     sign_out()
     st.session_state.user = None
-    st.experimental_rerun()
+    st.rerun()
 
 # ------------------- SIDEBAR -------------------
 st.sidebar.title("📂 Navigation")
