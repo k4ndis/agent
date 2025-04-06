@@ -20,6 +20,8 @@ if st.session_state.user is None:
     auth_mode = st.sidebar.radio("", ["Einloggen", "Registrieren"])
     email = st.sidebar.text_input("E-Mail")
     password = st.sidebar.text_input("Passwort", type="password")
+    password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
+
 
     if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
         res = sign_in(email, password)
@@ -30,12 +32,17 @@ if st.session_state.user is None:
             st.error("Login fehlgeschlagen")
 
     elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
-        res = sign_up(email, password)
-        if res.user:
-            st.session_state.user = res.user
-            st.success("Registrierung erfolgreich. Jetzt einloggen.")
+        if password != password_confirm:
+            st.error("❗ Die Passwörter stimmen nicht überein.")
+        elif len(password) < 6:
+            st.error("🔐 Passwort muss mindestens 6 Zeichen lang sein.")
         else:
-            st.error("Registrierung fehlgeschlagen")
+            res = sign_up(email, password)
+            if res.user:
+                st.session_state.user = res.user
+                st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
+            else:
+                st.error("Registrierung fehlgeschlagen.")
 
     st.stop()
 

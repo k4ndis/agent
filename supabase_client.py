@@ -20,7 +20,10 @@ def sign_out():
     return supabase.auth.sign_out()
 
 def get_user():
-    return supabase.auth.get_user().user
+    try:
+        return supabase.auth.get_user().user
+    except Exception:
+        return None
 
 # ----------------------------- DB -----------------------------
 def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: list[str], gpt_score_text: str, model: str):
