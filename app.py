@@ -25,11 +25,12 @@ if st.session_state.user is None:
 
     if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
         res = sign_in(email, password)
-        if res.user:
+        if res and res.user:
             st.session_state.user = res.user
             st.experimental_rerun()
         else:
-            st.error("Login fehlgeschlagen")
+            st.error("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
+
 
     elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
         if password != password_confirm:

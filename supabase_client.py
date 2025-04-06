@@ -11,7 +11,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ----------------------------- AUTH -----------------------------
 def sign_in(email, password):
-    return supabase.auth.sign_in_with_password({"email": email, "password": password})
+    try:
+        return supabase.auth.sign_in_with_password({"email": email, "password": password})
+    except Exception as e:
+        return None
 
 def sign_up(email, password):
     return supabase.auth.sign_up({"email": email, "password": password})
