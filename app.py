@@ -29,6 +29,9 @@ st.markdown("""
 
 st.markdown('<div class="top-header"><h1>💸 KI-Finanz-Dashboard</h1><div>🔐 Eingeloggt als: <b>demo@nutzer.de</b></div></div>', unsafe_allow_html=True)
 
+# ➕ Aktives Modell anzeigen
+st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
+
 # ------------------- SIDEBAR -------------------
 st.sidebar.title("📂 Navigation")
 seite = st.sidebar.radio("Wähle eine Ansicht:", [

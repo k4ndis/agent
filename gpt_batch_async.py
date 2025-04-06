@@ -3,8 +3,6 @@ import json
 import os
 from openai import AsyncOpenAI
 
-client = AsyncOpenAI()
-
 def chunkify(lst, n):
     return [lst[i:i + n] for i in range(0, len(lst), n)]
 
