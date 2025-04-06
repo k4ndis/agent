@@ -6,9 +6,9 @@ import pandas as pd
 import asyncio
 import matplotlib.pyplot as plt
 
-GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
-
 st.set_page_config(page_title="Finanz-Dashboard", layout="wide")
+
+GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
 
 # ------------------- HEADER -------------------
 st.markdown("""
