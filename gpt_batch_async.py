@@ -2,24 +2,16 @@ import asyncio
 import json
 import os
 from openai import AsyncOpenAI
-import streamlit as st  # Für Fortschrittsanzeige im Streamlit-UI
 
-# 💾 Cache laden (oder leere Map)
-CACHE_DATEI = "gpt_cache.json"
-if os.path.exists(CACHE_DATEI):
-    with open(CACHE_DATEI, "r", encoding="utf-8") as f:
-        gpt_cache = json.load(f)
-else:
-    gpt_cache = {}
+client = AsyncOpenAI()
 
 def chunkify(lst, n):
     return [lst[i:i + n] for i in range(0, len(lst), n)]
 
-async def kategorisiere_chunk(chunk, api_key: str):
+async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, model: str = "gpt-4-turbo") -> list[str]:
     client = AsyncOpenAI(api_key=api_key)
 
-    prompt = f"""
-Ordne den folgenden Transaktionen jeweils **eine** Ausgabenkategorie zu:
+    prompt_template = """Ordne den folgenden Transaktionen jeweils **eine** Ausgabenkategorie zu:
 
 - Lebensmittel
 - Mobilität
@@ -28,54 +20,55 @@ Ordne den folgenden Transaktionen jeweils **eine** Ausgabenkategorie zu:
 - Einkommen
 - Sonstiges
 
+Beispielausgabe:
+Shopping  
+Abos  
+Einkommen  
+...
+
 Transaktionen:
-{chr(10).join(chunk)}
+{texte}
 
 Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
 """
 
-    try:
-        completion = await client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "Du bist ein präziser Finanz-Kategorisierer."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=500,
-            temperature=0.2
-        )
-        lines = completion.choices[0].message.content.strip().splitlines()
-        return [line.strip() for line in lines if line.strip()]
-    except Exception as e:
-        return [f"Fehler: {e}"] * len(chunk)
+    cache_file = "gpt_cache.json"
+    gpt_cache = {}
 
-async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str) -> list[str]:
-    chunks = chunkify(beschreibungen, 40)
-    progress = st.progress(0)
-    kategorien = []
+    if os.path.exists(cache_file):
+        with open(cache_file, "r", encoding="utf-8") as f:
+            gpt_cache = json.load(f)
 
-    nicht_im_cache = [text for text in beschreibungen if text not in gpt_cache]
-    st.info(f"{len(beschreibungen)} Transaktionen insgesamt – {len(nicht_im_cache)} werden neu analysiert")
+    beschreibungen_neu = [b for b in beschreibungen if b not in gpt_cache]
+    print(f"➕ {len(beschreibungen_neu)} neue Transaktionen werden analysiert.")
 
-    i = 0
-    for chunk in chunkify(nicht_im_cache, 40):
-        teil_kategorien = await kategorisiere_chunk(chunk, api_key)
-        for beschreibung, kategorie in zip(chunk, teil_kategorien):
-            gpt_cache[beschreibung] = kategorie
-        i += 1
-        progress.progress(i / len(chunkify(nicht_im_cache, 40)))
+    kategorien_neu = []
 
-    # 💾 Cache speichern
-    with open(CACHE_DATEI, "w", encoding="utf-8") as f:
+    chunks = chunkify(beschreibungen_neu, 20)
+    for chunk in chunks:
+        prompt = prompt_template.replace("{texte}", "\n".join(chunk))
+        try:
+            response = await client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "Du bist ein präziser Finanz-Kategorisierer."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1000,
+                temperature=0.2
+            )
+            content = response.choices[0].message.content.strip()
+            lines = [line.strip() for line in content.splitlines() if line.strip()]
+            for original, kategorie in zip(chunk, lines):
+                gpt_cache[original] = kategorie
+                kategorien_neu.append(kategorie)
+        except Exception as e:
+            print(f"Fehler bei Chunk: {e}")
+            kategorien_neu.extend(["Fehler"] * len(chunk))
+
+    # Speichern
+    with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(gpt_cache, f, ensure_ascii=False, indent=2)
 
-    # 🎯 Ergebnis in richtiger Reihenfolge zurückgeben
-    kategorien = [gpt_cache.get(b, "Sonstiges") for b in beschreibungen]
-
-    # Sicherheitshalber Länge prüfen
-    if len(kategorien) > len(beschreibungen):
-        kategorien = kategorien[:len(beschreibungen)]
-    elif len(kategorien) < len(beschreibungen):
-        kategorien += ["Sonstiges"] * (len(beschreibungen) - len(kategorien))
-
-    return kategorien
+    # Finaler Rückgabewert
+    return [gpt_cache.get(b, "Fehler") for b in beschreibungen]

@@ -6,6 +6,8 @@ import pandas as pd
 import asyncio
 import matplotlib.pyplot as plt
 
+GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
+
 st.set_page_config(page_title="Finanz-Dashboard", layout="wide")
 
 # ------------------- HEADER -------------------
@@ -64,7 +66,7 @@ elif seite == "🤖 GPT-Kategorisierung":
         if api_key:
             alle_beschreibungen = df["beschreibung"].tolist()
             with st.spinner(f"Starte GPT-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
-                kategorien = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key))
+                kategorien = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
             df["GPT Kategorie"] = kategorien
             st.session_state.df = df
             st.success("GPT-Kategorisierung abgeschlossen.")
@@ -79,7 +81,7 @@ elif seite == "📊 Analyse & Score":
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
         if api_key and st.button("Finanzverhalten analysieren"):
             with st.spinner("GPT bewertet dein Finanzverhalten..."):
-                auswertung = gpt_score_auswertung(df, api_key)
+                auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
             st.success("Analyse abgeschlossen")
             st.markdown(auswertung)
 
