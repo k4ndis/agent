@@ -84,33 +84,62 @@ elif seite == "📊 Analyse & Score":
             st.markdown(auswertung)
 
 elif seite == "📈 Visualisierung":
-    st.header("Ausgaben nach Kategorie")
+    st.header("Visualisierung nach Monat und Kategorie")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
     else:
         df = st.session_state.df.copy()
+        df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
+        df["monat"] = df["datum"].dt.strftime("%B %Y")
 
-        # Nur Ausgaben (negative Beträge)
-        ausgaben = df[df["betrag"] < 0].copy()
+        # Monatsauswahl
+        monate_verfügbar = df["monat"].dropna().unique().tolist()
+        monate_verfügbar.sort()
+        gewählter_monat = st.selectbox("📅 Monat auswählen:", monate_verfügbar)
 
-        # GPT-Kategorien bereinigen
-        ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\\s*", "", regex=True)
+        gefiltert = df[df["monat"] == gewählter_monat]
+        ausgaben = gefiltert[gefiltert["betrag"] < 0].copy()
 
-        # Gruppierung und Sortierung
-        kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().sort_values()
+        if ausgaben.empty:
+            st.info("Keine Ausgaben für diesen Monat vorhanden.")
+        else:
+            # GPT-Kategorien bereinigen
+            ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\\s*", "", regex=True)
 
-        # Anzeige als gestutztes Diagramm (Top 10 + Rest)
-        top_kategorien = kategorien_summe.tail(10)
-        rest_summe = kategorien_summe.iloc[:-10].sum()
-        if rest_summe < 0:
-            top_kategorien["Andere"] = rest_summe
+            # Gruppierung
+            kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().sort_values()
 
-        # Visualisierung
-        fig, ax = plt.subplots()
-        top_kategorien.plot(kind="barh", ax=ax)
-        ax.set_title("Top-Ausgabenkategorien nach GPT")
-        ax.set_xlabel("Summe in EUR")
-        st.pyplot(fig)
+            # Top 10 + Andere
+            top_kategorien = kategorien_summe.tail(10)
+            rest_summe = kategorien_summe.iloc[:-10].sum()
+            if rest_summe < 0:
+                top_kategorien["Andere"] = rest_summe
 
-        st.markdown("Letzte Aktualisierung: _automatisch beim GPT-Scan_ ✅")
+            col1, col2 = st.columns(2)
 
+            with col1:
+                st.subheader("📊 Balkendiagramm")
+                fig1, ax1 = plt.subplots()
+                top_kategorien.plot(kind="barh", ax=ax1)
+                ax1.set_title(f"Top-Ausgaben im {gewählter_monat}")
+                ax1.set_xlabel("Summe in EUR")
+                st.pyplot(fig1)
+
+            with col2:
+                st.subheader("📎 Kreisdiagramm")
+                fig2, ax2 = plt.subplots()
+                top_kategorien_abs = top_kategorien.abs()
+                ax2.pie(top_kategorien_abs, labels=top_kategorien_abs.index, autopct="%1.1f%%", startangle=90)
+                ax2.axis("equal")
+                st.pyplot(fig2)
+
+            st.markdown("Letzte Aktualisierung: _automatisch beim GPT-Scan_ ✅")
+
+            # Monatsvergleich (optional erweitern)
+            st.subheader("📈 Monatsvergleich der Gesamtausgaben")
+            monatsvergleich = df[df["betrag"] < 0].groupby("monat")["betrag"].sum().sort_index()
+            fig3, ax3 = plt.subplots()
+            monatsvergleich.plot(kind="bar", ax=ax3)
+            ax3.set_title("Gesamtausgaben pro Monat")
+            ax3.set_ylabel("Summe in EUR")
+            st.pyplot(fig3)
