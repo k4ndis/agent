@@ -67,10 +67,13 @@ if uploaded_file is not None:
                     fortschritt = min((i + paketgroesse) / len(alle_beschreibungen), 1.0)
                     progress.progress(fortschritt)
 
-            df["GPT Kategorie"] = alle_kategorien
-            st.success("GPT-Kategorisierung abgeschlossen.")
-            st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
-
+            if len(alle_kategorien) != len(df):
+                st.error(f"❌ GPT-Antwort stimmt nicht mit Anzahl der Transaktionen überein: {len(alle_kategorien)} ≠ {len(df)}")
+                st.stop()
+            else:
+                df["GPT Kategorie"] = alle_kategorien
+                st.success("✅ GPT-Kategorisierung abgeschlossen.")
+                st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
 
             st.subheader("💳 Mini-Schufa Score (Beta)")
             if st.button("Finanzverhalten analysieren"):

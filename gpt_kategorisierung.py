@@ -53,7 +53,7 @@ Einkommen
 Transaktionen:
 {chr(10).join(beschreibungen)}
 
-Antwort: Nur die Kategorien, eine pro Zeile, in derselben Reihenfolge.
+Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
 """
 
     try:
@@ -68,11 +68,24 @@ Antwort: Nur die Kategorien, eine pro Zeile, in derselben Reihenfolge.
         )
 
         raw = response.choices[0].message.content.strip()
+
+        # 🧹 Bereinigen
         kategorien = [line.strip() for line in raw.splitlines() if line.strip()]
+
+        # ⚠️ Wenn GPT zu wenig antwortet → auffüllen
+        if len(kategorien) < len(beschreibungen):
+            fehlend = len(beschreibungen) - len(kategorien)
+            kategorien += ["Sonstiges"] * fehlend
+
+        # 🛑 Wenn GPT zu viele Zeilen gibt → kürzen
+        if len(kategorien) > len(beschreibungen):
+            kategorien = kategorien[:len(beschreibungen)]
+
         return kategorien
 
     except Exception as e:
         return [f"Fehler: {e}"] * len(beschreibungen)
+
 
 def gpt_score_auswertung(df, api_key: str) -> str:
     from openai import OpenAI
