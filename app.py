@@ -101,21 +101,17 @@ if not hasattr(user, "confirmed_at") or not user.confirmed_at:
 
 
 # ------------------- HEADER -------------------
-st.markdown("""
-    <style>
-    .top-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background-color: #f5f5f5;
-        border-bottom: 1px solid #ddd;
-    }
-    .top-header h1 {
-        margin: 0;
-    }
-    </style>
-""", unsafe_allow_html=True)
+letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
+st.markdown(f'''
+<div class="top-header">
+    <h1>💸 KI-Finanz-Dashboard</h1>
+    <div>
+        🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
+        💾 Letzter Sync: <b>{letzte_sync}</b>
+    </div>
+</div>
+''', unsafe_allow_html=True)
+
 
 st.markdown(f'<div class="top-header"><h1>💸 KI-Finanz-Dashboard</h1><div>🔐 Eingeloggt als: <b>{st.session_state.user.email}</b></div></div>', unsafe_allow_html=True)
 
@@ -166,7 +162,13 @@ if seite == "🔼 Transaktionen hochladen":
                 gpt_score_text="",
                 model=GPT_MODE
             )
-            st.session_state.last_saved = datetime.datetime.now()    
+            st.session_state.last_saved = datetime.datetime.now()
+            
+            if st.session_state.last_saved:
+                letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
+                st.info(f"🟢 Zuletzt gespeichert: {letzte}")
+            else:
+                st.warning("🔴 Noch nicht gespeichert.")                
         else:
             st.error("Datei konnte nicht verarbeitet werden.")
 
@@ -197,6 +199,12 @@ elif seite == "🤖 GPT-Kategorisierung":
             )
             st.session_state.last_saved = datetime.datetime.now()
 
+            if st.session_state.last_saved:
+                letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
+                st.info(f"🟢 Zuletzt gespeichert: {letzte}")
+            else:
+                st.warning("🔴 Noch nicht gespeichert.")
+
 
 elif seite == "📊 Analyse & Score":
     st.header("Mini-Schufa Analyse (GPT)")
@@ -222,6 +230,11 @@ elif seite == "📊 Analyse & Score":
             )
             st.success("Bericht wurde automatisch gespeichert.")
             st.session_state.last_saved = datetime.datetime.now()
+            if st.session_state.last_saved:
+                letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
+                st.info(f"🟢 Zuletzt gespeichert: {letzte}")
+            else:
+                st.warning("🔴 Noch nicht gespeichert.")
 
 
 elif seite == "📈 Visualisierung":
