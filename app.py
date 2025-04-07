@@ -339,12 +339,10 @@ elif seite == "📂 Mein Verlauf":
                 st.dataframe(pd.DataFrame(eintrag["raw_data"]))
 
                 if st.button(f"🔁 Bericht laden", key=f"bericht_{idx}"):
-                    st.session_state.df = pd.DataFrame(eintrag["raw_data"])
-                    if "gpt_categories" in eintrag and eintrag["gpt_categories"]:
-                        st.session_state.df["GPT Kategorie"] = eintrag["gpt_categories"]
-                    st.session_state.gpt_score = eintrag["gpt_score_text"]
+                    st.session_state.selected_report = eintrag
                     st.session_state.seite = "📁 Bericht anzeigen"
                     st.rerun()
+
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
 
@@ -353,14 +351,22 @@ elif seite == "📂 Mein Verlauf":
 elif seite == "📁 Bericht anzeigen":
     st.header("📁 Bericht anzeigen")
 
-    if st.session_state.df is None:
+    if "selected_report" not in st.session_state:
         st.warning("Es wurde noch kein Bericht geladen.")
     else:
-        df = st.session_state.df
+        eintrag = st.session_state.selected_report
+
+        # Bericht-Daten setzen (zur Wiederverwendung in anderen Menüpunkten)
+        df = pd.DataFrame(eintrag["raw_data"])
+        if "gpt_categories" in eintrag and eintrag["gpt_categories"]:
+            df["GPT Kategorie"] = eintrag["gpt_categories"]
+        st.session_state.df = df
+        st.session_state.gpt_score = eintrag["gpt_score_text"]
+
         st.subheader("📊 Transaktionen mit GPT-Kategorien")
         st.dataframe(df)
 
-        if "gpt_score" in st.session_state and st.session_state.gpt_score:
+        if st.session_state.gpt_score:
             st.subheader("🧠 GPT Score-Analyse")
             st.markdown(st.session_state.gpt_score)
         else:
@@ -370,3 +376,4 @@ elif seite == "📁 Bericht anzeigen":
             st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
             if st.session_state.last_saved else "–"
         ))
+
