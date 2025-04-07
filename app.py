@@ -16,18 +16,28 @@ GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gp
 if "user" not in st.session_state:
     st.session_state.user = None
 
+# Auth-Mode initialisieren
+if "auth_mode" not in st.session_state:
+    st.session_state["auth_mode"] = "Einloggen"
+
+# Spezial-Flow: Erfolgreiche Registrierung -> zeige Hinweis
+if st.session_state["auth_mode"] == "LoginViewAfterRegister":
+    st.sidebar.success("✅ Registrierung erfolgreich. Bitte logge dich jetzt mit deiner E-Mail und deinem Passwort ein.")
+    st.session_state["auth_mode"] = "Einloggen"
+
+# 🟡 Ab hier ganz normal weiter mit Login/Registrierung
 if st.session_state.user is None:
     st.sidebar.title("🔐 Anmeldung")
-    if "auth_mode" not in st.session_state:
-        st.session_state["auth_mode"] = "Einloggen"
-    auth_mode = st.sidebar.radio("Aktion wählen", ["Einloggen", "Registrieren"], index=["Einloggen", "Registrieren"].index(st.session_state["auth_mode"]))
+    auth_mode = st.sidebar.radio(
+        "Aktion wählen", ["Einloggen", "Registrieren"],
+        index=["Einloggen", "Registrieren"].index(st.session_state["auth_mode"])
+    )
 
     email = st.sidebar.text_input("E-Mail")
     password = st.sidebar.text_input("Passwort", type="password")
     password_confirm = ""
     if auth_mode == "Registrieren":
         password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
-
 
     if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
         if not email or not password:
@@ -50,7 +60,6 @@ if st.session_state.user is None:
             else:
                 st.error("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
 
-
     elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
         if password != password_confirm:
             st.error("❗ Die Passwörter stimmen nicht überein.")
@@ -59,19 +68,15 @@ if st.session_state.user is None:
         else:
             res = sign_up(email, password)
             if res.user:
-                st.session_state.user = res.user
                 st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
-
-                # 🔙 Button nach Registrierung anzeigen
-                if st.button("🔙 Zurück zum Login"):
-                    sign_out()
-                    st.session_state.user = None
-                    st.session_state["auth_mode"] = "Einloggen"  # << NEU
-                    st.rerun()
+                # WICHTIG: Benutzer nicht setzen!
+                st.session_state["auth_mode"] = "LoginViewAfterRegister"
+                st.rerun()
             else:
                 st.error("Registrierung fehlgeschlagen.")
 
     st.stop()
+
 
 # ------------------- BESTÄTIGUNG PRÜFEN -------------------
 user = get_user()
