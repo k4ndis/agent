@@ -3,3 +3,4 @@ pandas
 matplotlib
 openai>=1.10.0
 supabase
+plotly
