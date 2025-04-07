@@ -58,6 +58,12 @@ if st.session_state.user is None:
             if res.user:
                 st.session_state.user = res.user
                 st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
+
+                # 🔙 Button nach Registrierung anzeigen
+                if st.button("🔙 Zurück zum Login"):
+                    sign_out()
+                    st.session_state.user = None
+                    st.rerun()
             else:
                 st.error("Registrierung fehlgeschlagen.")
 
