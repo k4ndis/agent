@@ -20,7 +20,9 @@ if st.session_state.user is None:
     auth_mode = st.sidebar.radio("", ["Einloggen", "Registrieren"])
     email = st.sidebar.text_input("E-Mail")
     password = st.sidebar.text_input("Passwort", type="password")
-    password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
+    password_confirm = ""
+    if auth_mode == "Registrieren":
+        password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
 
 
     if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
