@@ -333,18 +333,18 @@ elif seite == "📂 Mein Verlauf":
     res = load_reports(st.session_state.user.id)
 
     if res.data:
-        for eintrag in res.data[::-1]:  # neueste oben
+        for idx, eintrag in enumerate(res.data[::-1]):  # neueste oben
             with st.expander(f"🗓 {eintrag['date_range']} – {eintrag['model']}"):
                 st.markdown(f"**Score:** {eintrag['gpt_score_text'][:300]}..." if eintrag["gpt_score_text"] else "_(keine Bewertung)_")
                 st.dataframe(pd.DataFrame(eintrag["raw_data"]))
+
+                if st.button(f"🔁 Bericht laden", key=f"bericht_{idx}"):
+                    st.session_state.df = pd.DataFrame(eintrag["raw_data"])
+                    st.session_state.gpt_score = eintrag["gpt_score_text"]
+                    st.session_state.seite = "📁 Bericht anzeigen"
+                    st.rerun()
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
-
-    if st.button("🔁 Bericht laden"):
-        st.session_state.df = pd.DataFrame(eintrag["raw_data"])
-        st.session_state.gpt_score = eintrag["gpt_score_text"]
-        st.session_state.seite = "📁 Bericht anzeigen"
-        st.rerun()
 
 
 # ------------------- Bericht anzeigen -------------------
