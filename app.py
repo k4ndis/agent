@@ -18,7 +18,10 @@ if "user" not in st.session_state:
 
 if st.session_state.user is None:
     st.sidebar.title("🔐 Anmeldung")
-    auth_mode = st.sidebar.radio("", ["Einloggen", "Registrieren"])
+    if "auth_mode" not in st.session_state:
+        st.session_state["auth_mode"] = "Einloggen"
+    auth_mode = st.sidebar.radio("Aktion wählen", ["Einloggen", "Registrieren"], index=["Einloggen", "Registrieren"].index(st.session_state["auth_mode"]))
+
     email = st.sidebar.text_input("E-Mail")
     password = st.sidebar.text_input("Passwort", type="password")
     password_confirm = ""
@@ -63,6 +66,7 @@ if st.session_state.user is None:
                 if st.button("🔙 Zurück zum Login"):
                     sign_out()
                     st.session_state.user = None
+                    st.session_state["auth_mode"] = "Einloggen"  # << NEU
                     st.rerun()
             else:
                 st.error("Registrierung fehlgeschlagen.")
