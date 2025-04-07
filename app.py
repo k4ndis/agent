@@ -133,7 +133,8 @@ seite = st.sidebar.radio("Wähle eine Ansicht:", [
     "🔼 Transaktionen hochladen",
     "🤖 GPT-Kategorisierung",
     "📊 Analyse & Score",
-    "📈 Visualisierung",    
+    "📈 Visualisierung",
+    "📂 Mein Verlauf",    
 ])
 
 
@@ -306,6 +307,7 @@ elif seite == "📈 Visualisierung":
             st.plotly_chart(bar_monate, use_container_width=True)
 
 
+# ------------------- Admin -------------------
 elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
     st.header("🧑‍💼 Admin-Übersicht: Alle gespeicherten Berichte")
     res = load_all_reports()
@@ -320,3 +322,19 @@ elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
             st.divider()
     else:
         st.info("Noch keine gespeicherten Berichte vorhanden.")
+
+
+# ------------------- Mein Verlauf -------------------
+elif seite == "📂 Mein Verlauf":
+    st.header("📂 Mein persönlicher Analyse-Verlauf")
+    from supabase_client import load_reports
+
+    res = load_reports(st.session_state.user.id)
+
+    if res.data:
+        for eintrag in res.data[::-1]:  # neueste oben
+            with st.expander(f"🗓 {eintrag['date_range']} – {eintrag['model']}"):
+                st.markdown(f"**Score:** {eintrag['gpt_score_text'][:300]}..." if eintrag["gpt_score_text"] else "_(keine Bewertung)_")
+                st.dataframe(pd.DataFrame(eintrag["raw_data"]))
+    else:
+        st.info("Noch keine gespeicherten Berichte gefunden.")
