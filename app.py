@@ -134,7 +134,8 @@ seite = st.sidebar.radio("Wähle eine Ansicht:", [
     "🤖 GPT-Kategorisierung",
     "📊 Analyse & Score",
     "📈 Visualisierung",
-    "📂 Mein Verlauf",    
+    "📂 Mein Verlauf",
+    "📄 Bericht anzeigen",    
 ])
 
 
@@ -338,3 +339,32 @@ elif seite == "📂 Mein Verlauf":
                 st.dataframe(pd.DataFrame(eintrag["raw_data"]))
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
+
+    if st.button("🔁 Bericht laden"):
+        st.session_state.df = pd.DataFrame(eintrag["raw_data"])
+        st.session_state.gpt_score = eintrag["gpt_score_text"]
+        st.session_state.seite = "📁 Bericht anzeigen"
+        st.rerun()
+
+
+# ------------------- Bericht anzeigen -------------------
+elif seite == "📁 Bericht anzeigen":
+    st.header("📁 Bericht anzeigen")
+
+    if st.session_state.df is None:
+        st.warning("Es wurde noch kein Bericht geladen.")
+    else:
+        df = st.session_state.df
+        st.subheader("📊 Transaktionen mit GPT-Kategorien")
+        st.dataframe(df)
+
+        if "gpt_score" in st.session_state and st.session_state.gpt_score:
+            st.subheader("🧠 GPT Score-Analyse")
+            st.markdown(st.session_state.gpt_score)
+        else:
+            st.info("Für diesen Bericht wurde noch keine Analyse durchgeführt.")
+
+        st.markdown("Letzter Sync: " + (
+            st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
+            if st.session_state.last_saved else "–"
+        ))
