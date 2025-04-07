@@ -39,7 +39,8 @@ if st.session_state.user is None:
                 else:
                     st.warning("❗ Deine E-Mail-Adresse ist noch nicht bestätigt.")
                     if st.button("📧 Bestätigungsmail erneut senden"):
-                        resend_confirmation_email(email)
+                        with st.spinner("Sende E-Mail..."):
+                            resend_confirmation_email(email)
                         st.success("E-Mail wurde erneut versendet.")
             elif res and not res.user:
                 st.warning("❗ Login fehlgeschlagen – möglicherweise ist deine E-Mail noch nicht bestätigt.")
