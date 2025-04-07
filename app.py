@@ -356,6 +356,10 @@ elif seite == "📁 Bericht anzeigen":
     else:
         eintrag = st.session_state.selected_report
 
+        # 🧪 Debug-Ausgabe zur Kontrolle
+        st.subheader("🧪 Debug: Inhalt von selected_report")
+        st.write("Eintrag:", eintrag)
+
         # Bericht-Daten setzen (zur Wiederverwendung in anderen Menüpunkten)
         df = pd.DataFrame(eintrag["raw_data"])
         if "gpt_categories" in eintrag and eintrag["gpt_categories"]:
