@@ -351,22 +351,26 @@ elif seite == "📂 Mein Verlauf":
 elif seite == "📁 Bericht anzeigen":
     st.header("📁 Bericht anzeigen")
 
+    # ✅ Debug-Ausgabe für Fehleranalyse
+    st.write("DEBUG: selected_report:", st.session_state.get("selected_report"))
+
     if "selected_report" not in st.session_state:
         st.warning("Es wurde noch kein Bericht geladen.")
     else:
+        
+        
         eintrag = st.session_state.selected_report
-
-        # 🧪 Debug-Ausgabe zur Kontrolle
-        st.subheader("🧪 Debug: Inhalt von selected_report")
-        st.write("Eintrag:", eintrag)
 
         # Bericht-Daten setzen (zur Wiederverwendung in anderen Menüpunkten)
         df = pd.DataFrame(eintrag["raw_data"])
         if "gpt_categories" in eintrag and eintrag["gpt_categories"]:
             df["GPT Kategorie"] = eintrag["gpt_categories"]
+
+        # jetzt setzen
         st.session_state.df = df
         st.session_state.gpt_score = eintrag["gpt_score_text"]
 
+        # Inhalt anzeigen
         st.subheader("📊 Transaktionen mit GPT-Kategorien")
         st.dataframe(df)
 
@@ -380,4 +384,5 @@ elif seite == "📁 Bericht anzeigen":
             st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
             if st.session_state.last_saved else "–"
         ))
+
 
