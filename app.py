@@ -256,11 +256,14 @@ elif seite == "📊 Analyse & Score":
                 st.warning("🔴 Noch nicht gespeichert.")
 
 
+# ------------------- Visualisierung -------------------
 elif seite == "📈 Visualisierung":
     st.header("Visualisierung nach Monat und Kategorie")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
     else:
+        import plotly.express as px
+
         df = st.session_state.df.copy()
         df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
         df["monat"] = df["datum"].dt.strftime("%B %Y")
@@ -276,38 +279,32 @@ elif seite == "📈 Visualisierung":
             st.info("Keine Ausgaben für diesen Monat vorhanden.")
         else:
             ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\s*", "", regex=True)
-            kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().sort_values()
-            top_kategorien = kategorien_summe.tail(10)
-            rest_summe = kategorien_summe.iloc[:-10].sum()
-            if rest_summe < 0:
-                top_kategorien["Andere"] = rest_summe
+            kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().abs().reset_index()
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("📊 Balkendiagramm")
-                fig1, ax1 = plt.subplots()
-                top_kategorien.plot(kind="barh", ax=ax1)
-                ax1.set_title(f"Top-Ausgaben im {gewählter_monat}")
-                ax1.set_xlabel("Summe in EUR")
-                st.pyplot(fig1)
+            st.subheader("📊 Ausgaben nach Kategorie (Balken)")
+            bar = px.bar(kategorien_summe.sort_values("betrag"),
+                         x="betrag", y="GPT Kategorie", orientation="h",
+                         labels={"betrag": "Summe in EUR", "GPT Kategorie": "Kategorie"},
+                         height=400)
+            st.plotly_chart(bar, use_container_width=True)
 
-            with col2:
-                st.subheader("📎 Kreisdiagramm")
-                fig2, ax2 = plt.subplots()
-                top_kategorien_abs = top_kategorien.abs()
-                ax2.pie(top_kategorien_abs, labels=top_kategorien_abs.index, autopct="%1.1f%%", startangle=90)
-                ax2.axis("equal")
-                st.pyplot(fig2)
+            st.subheader("📎 Ausgabenanteile (Kreisdiagramm)")
+            pie = px.pie(kategorien_summe,
+                         values="betrag", names="GPT Kategorie",
+                         title="Anteile der Ausgaben",
+                         hole=0.3)
+            st.plotly_chart(pie, use_container_width=True)
 
             st.markdown("Letzte Aktualisierung: _automatisch beim GPT-Scan_ ✅")
 
             st.subheader("📈 Monatsvergleich der Gesamtausgaben")
-            monatsvergleich = df[df["betrag"] < 0].groupby("monat")["betrag"].sum().sort_index()
-            fig3, ax3 = plt.subplots()
-            monatsvergleich.plot(kind="bar", ax=ax3)
-            ax3.set_title("Gesamtausgaben pro Monat")
-            ax3.set_ylabel("Summe in EUR")
-            st.pyplot(fig3)
+            monatsvergleich = df[df["betrag"] < 0].groupby("monat")["betrag"].sum().abs().reset_index()
+            bar_monate = px.bar(monatsvergleich,
+                                x="monat", y="betrag",
+                                labels={"betrag": "Summe in EUR", "monat": "Monat"},
+                                title="Gesamtausgaben pro Monat")
+            st.plotly_chart(bar_monate, use_container_width=True)
+
 
 elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
     st.header("🧑‍💼 Admin-Übersicht: Alle gespeicherten Berichte")
