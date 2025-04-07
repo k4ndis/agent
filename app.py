@@ -145,31 +145,40 @@ if seite == "🔼 Transaktionen hochladen":
     if uploaded_file:
         df = parse_transaktion_datei(uploaded_file)
         if df is not None:
+            # 🛡 Sicherstellen: Timestamp → datetime
+            df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
+
             st.session_state.df = df
             st.success("Datei wurde erfolgreich geladen und erkannt.")
             st.dataframe(df)
 
-            # ✅ automatisch Speichern nach Upload
+            # ⏱ min/max
+            min_datum = df["datum"].min().strftime("%Y-%m-%d")
+            max_datum = df["datum"].max().strftime("%Y-%m-%d")
+
+            # 💾 In Strings umwandeln (JSON-safe)
+            df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
+
+            # 🔽 Jetzt safe speichern
             from supabase_client import save_report
-            min_datum = pd.to_datetime(df["datum"].min()).strftime("%Y-%m-%d")
-            max_datum = pd.to_datetime(df["datum"].max()).strftime("%Y-%m-%d")
             save_report(
-                user_id=st.session_state.user.id,                
-                date_range = f"{min_datum} - {max_datum}",
+                user_id=st.session_state.user.id,
+                date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=[],
                 gpt_score_text="",
                 model=GPT_MODE
             )
             st.session_state.last_saved = datetime.datetime.now()
-            
+
             if st.session_state.last_saved:
                 letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
                 st.info(f"🟢 Zuletzt gespeichert: {letzte}")
             else:
-                st.warning("🔴 Noch nicht gespeichert.")                
+                st.warning("🔴 Noch nicht gespeichert.")
         else:
             st.error("Datei konnte nicht verarbeitet werden.")
+
 
 elif seite == "🤖 GPT-Kategorisierung":
     st.header("GPT-Kategorisierung")
@@ -188,11 +197,14 @@ elif seite == "🤖 GPT-Kategorisierung":
             st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
 
             # ✅ automatisch speichern nach GPT-Kategorisierung
-            min_datum = pd.to_datetime(df["datum"].min()).strftime("%Y-%m-%d")
-            max_datum = pd.to_datetime(df["datum"].max()).strftime("%Y-%m-%d")
+            df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
+            min_datum = df["datum"].min().strftime("%Y-%m-%d")
+            max_datum = df["datum"].max().strftime("%Y-%m-%d")
+            df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
+
             save_report(
-                user_id=st.session_state.user.id,                
-                date_range = f"{min_datum} - {max_datum}",
+                user_id=st.session_state.user.id,
+                date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 gpt_score_text="",
@@ -220,12 +232,15 @@ elif seite == "📊 Analyse & Score":
             st.success("Analyse abgeschlossen")
             st.markdown(auswertung)
 
-           # ✅ automatisch speichern nach GPT-Auswertung
-            min_datum = pd.to_datetime(df["datum"].min()).strftime("%Y-%m-%d")
-            max_datum = pd.to_datetime(df["datum"].max()).strftime("%Y-%m-%d")
+            # ✅ automatisch speichern nach GPT-Auswertung
+            df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
+            min_datum = df["datum"].min().strftime("%Y-%m-%d")
+            max_datum = df["datum"].max().strftime("%Y-%m-%d")
+            df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
+
             save_report(
-                user_id=st.session_state.user.id,                
-                date_range = f"{min_datum} - {max_datum}",
+                user_id=st.session_state.user.id,
+                date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 gpt_score_text=auswertung,
@@ -233,6 +248,7 @@ elif seite == "📊 Analyse & Score":
             )
             st.success("Bericht wurde automatisch gespeichert.")
             st.session_state.last_saved = datetime.datetime.now()
+
             if st.session_state.last_saved:
                 letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
                 st.info(f"🟢 Zuletzt gespeichert: {letzte}")
