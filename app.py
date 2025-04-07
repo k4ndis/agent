@@ -99,6 +99,12 @@ if not hasattr(user, "confirmed_at") or not user.confirmed_at:
 
     st.stop()
 
+# Session State für geteilte Daten
+if "df" not in st.session_state:
+    st.session_state.df = None
+if "last_saved" not in st.session_state:
+    st.session_state.last_saved = None
+
 
 # ------------------- HEADER -------------------
 letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
@@ -134,11 +140,6 @@ seite = st.sidebar.radio("Wähle eine Ansicht:", [
 ])
 seite = seite or "🔼 Transaktionen hochladen"
 
-# Session State für geteilte Daten
-if "df" not in st.session_state:
-    st.session_state.df = None
-if "last_saved" not in st.session_state:
-    st.session_state.last_saved = None
 
 # ------------------- HAUPT-INHALTE -------------------
 
