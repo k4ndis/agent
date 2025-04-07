@@ -119,8 +119,6 @@ st.markdown(f'''
 ''', unsafe_allow_html=True)
 
 
-st.markdown(f'<div class="top-header"><h1>💸 KI-Finanz-Dashboard</h1><div>🔐 Eingeloggt als: <b>{st.session_state.user.email}</b></div></div>', unsafe_allow_html=True)
-
 # ➕ Aktives Modell anzeigen
 st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
 
@@ -135,8 +133,7 @@ seite = st.sidebar.radio("Wähle eine Ansicht:", [
     "🔼 Transaktionen hochladen",
     "🤖 GPT-Kategorisierung",
     "📊 Analyse & Score",
-    "📈 Visualisierung",
-    "🧑‍💼 Admin (alle Nutzerberichte)" if st.session_state.user.email.startswith("admin") else None
+    "📈 Visualisierung",    
 ])
 seite = seite or "🔼 Transaktionen hochladen"
 
