@@ -12,20 +12,33 @@ st.set_page_config(page_title="Finanz-Dashboard", layout="wide")
 GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
 
 # ------------------- AUTHENTIFIZIERUNG -------------------
-if "user" not in st.session_state:
-    st.session_state.user = None
+st.sidebar.markdown("## 🔐 Anmeldung")
 
-if st.session_state.user is None:
-    st.sidebar.title("🔐 Anmeldung")
-    auth_mode = st.sidebar.radio("", ["Einloggen", "Registrieren"])
-    email = st.sidebar.text_input("E-Mail")
-    password = st.sidebar.text_input("Passwort", type="password")
-    password_confirm = ""
-    if auth_mode == "Registrieren":
-        password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
+# Session-Status für Modus-Auswahl (Login/Registrieren)
+if "auth_mode" not in st.session_state:
+    st.session_state.auth_mode = "Einloggen"
 
+auth_mode = st.sidebar.radio(
+    "Aktion wählen",
+    ["Einloggen", "Registrieren"],
+    index=0 if st.session_state.auth_mode == "Einloggen" else 1
+)
+st.session_state.auth_mode = auth_mode
 
-    if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
+# Eingabefelder für Login/Registrierung
+email = st.sidebar.text_input("E-Mail")
+password = st.sidebar.text_input("Passwort", type="password")
+
+# Nur bei Registrierung: Passwortbestätigung
+password_confirm = ""
+if auth_mode == "Registrieren":
+    password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
+
+# Authentifizierungslogik
+if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
+    if not email or not password:
+        st.warning("Bitte E-Mail und Passwort eingeben.")
+    else:
         res = sign_in(email, password)
         if res and res.user:
             st.session_state.user = res.user
@@ -33,19 +46,20 @@ if st.session_state.user is None:
         else:
             st.error("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
 
-
-    elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
-        if password != password_confirm:
-            st.error("❗ Die Passwörter stimmen nicht überein.")
-        elif len(password) < 6:
-            st.error("🔐 Passwort muss mindestens 6 Zeichen lang sein.")
+elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
+    if not email or not password:
+        st.warning("Bitte E-Mail und Passwort eingeben.")
+    elif password != password_confirm:
+        st.warning("Die Passwörter stimmen nicht überein.")
+    else:
+        res = sign_up(email, password)
+        if res and res.user:
+            st.session_state.user = res.user
+            st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
+            st.session_state.auth_mode = "Einloggen"
+            st.rerun()
         else:
-            res = sign_up(email, password)
-            if res.user:
-                st.session_state.user = res.user
-                st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
-            else:
-                st.error("Registrierung fehlgeschlagen.")
+            st.error("Registrierung fehlgeschlagen.")
 
     st.stop()
 
