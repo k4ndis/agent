@@ -7,59 +7,58 @@ import pandas as pd
 import asyncio
 import matplotlib.pyplot as plt
 
+
 st.set_page_config(page_title="Finanz-Dashboard", layout="wide")
 
 GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
 
 # ------------------- AUTHENTIFIZIERUNG -------------------
-st.sidebar.markdown("## 🔐 Anmeldung")
+if "user" not in st.session_state:
+    st.session_state.user = None
 
-# Session-Status für Modus-Auswahl (Login/Registrieren)
-if "auth_mode" not in st.session_state:
-    st.session_state.auth_mode = "Einloggen"
+if st.session_state.user is None:
+    st.sidebar.title("🔐 Anmeldung")
+    auth_mode = st.sidebar.radio("", ["Einloggen", "Registrieren"])
+    email = st.sidebar.text_input("E-Mail")
+    password = st.sidebar.text_input("Passwort", type="password")
+    password_confirm = ""
+    if auth_mode == "Registrieren":
+        password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
 
-auth_mode = st.sidebar.radio(
-    "Aktion wählen",
-    ["Einloggen", "Registrieren"],
-    index=0 if st.session_state.auth_mode == "Einloggen" else 1
-)
-st.session_state.auth_mode = auth_mode
 
-# Eingabefelder für Login/Registrierung
-email = st.sidebar.text_input("E-Mail")
-password = st.sidebar.text_input("Passwort", type="password")
-
-# Nur bei Registrierung: Passwortbestätigung
-password_confirm = ""
-if auth_mode == "Registrieren":
-    password_confirm = st.sidebar.text_input("Passwort bestätigen", type="password")
-
-# Authentifizierungslogik
-if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
-    if not email or not password:
-        st.warning("Bitte E-Mail und Passwort eingeben.")
-    else:
-        res = sign_in(email, password)
-        if res and res.user:
-            st.session_state.user = res.user
-            st.rerun()
+    if auth_mode == "Einloggen" and st.sidebar.button("Einloggen"):
+        if not email or not password:
+            st.warning("Bitte E-Mail und Passwort eingeben.")
         else:
-            st.error("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
+            res = sign_in(email, password)
+            if res and res.user:
+                user_obj = res.user
+                if hasattr(user_obj, "confirmed_at") and user_obj.confirmed_at:
+                    st.session_state.user = user_obj
+                    st.rerun()
+                else:
+                    st.warning("❗ Deine E-Mail-Adresse ist noch nicht bestätigt.")
+                    if st.button("📧 Bestätigungsmail erneut senden"):
+                        resend_confirmation_email(email)
+                        st.success("E-Mail wurde erneut versendet.")
+            elif res and not res.user:
+                st.warning("❗ Login fehlgeschlagen – möglicherweise ist deine E-Mail noch nicht bestätigt.")
+            else:
+                st.error("Login fehlgeschlagen. Bitte E-Mail und Passwort prüfen.")
 
-elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
-    if not email or not password:
-        st.warning("Bitte E-Mail und Passwort eingeben.")
-    elif password != password_confirm:
-        st.warning("Die Passwörter stimmen nicht überein.")
-    else:
-        res = sign_up(email, password)
-        if res and res.user:
-            st.session_state.user = res.user
-            st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
-            st.session_state.auth_mode = "Einloggen"
-            st.rerun()
+
+    elif auth_mode == "Registrieren" and st.sidebar.button("Registrieren"):
+        if password != password_confirm:
+            st.error("❗ Die Passwörter stimmen nicht überein.")
+        elif len(password) < 6:
+            st.error("🔐 Passwort muss mindestens 6 Zeichen lang sein.")
         else:
-            st.error("Registrierung fehlgeschlagen.")
+            res = sign_up(email, password)
+            if res.user:
+                st.session_state.user = res.user
+                st.success("Registrierung erfolgreich. Bitte E-Mail bestätigen.")
+            else:
+                st.error("Registrierung fehlgeschlagen.")
 
     st.stop()
 
@@ -70,10 +69,17 @@ if not user:
     st.stop()
 
 if not hasattr(user, "confirmed_at") or not user.confirmed_at:
-    st.warning("Bitte bestätige deine E-Mail-Adresse über den Link, den wir dir gesendet haben.")
+    st.warning("🔒 Deine E-Mail ist noch nicht bestätigt. Bitte überprüfe dein Postfach.")
+    
     if st.button("📧 Bestätigungsmail erneut senden"):
         resend_confirmation_email(user.email)
-        st.success("E-Mail wurde erneut versendet.")
+        st.success("✅ E-Mail erneut gesendet.")
+
+    if st.button("🔙 Zurück zum Login"):
+        sign_out()
+        st.session_state.user = None
+        st.rerun()
+
     st.stop()
 
 
