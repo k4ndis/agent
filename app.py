@@ -135,7 +135,6 @@ seite = st.sidebar.radio("Wähle eine Ansicht:", [
     "📊 Analyse & Score",
     "📈 Visualisierung",    
 ])
-seite = seite or "🔼 Transaktionen hochladen"
 
 
 # ------------------- HAUPT-INHALTE -------------------
@@ -152,9 +151,11 @@ if seite == "🔼 Transaktionen hochladen":
 
             # ✅ automatisch Speichern nach Upload
             from supabase_client import save_report
+            min_datum = pd.to_datetime(df["datum"].min()).strftime("%Y-%m-%d")
+            max_datum = pd.to_datetime(df["datum"].max()).strftime("%Y-%m-%d")
             save_report(
-                user_id=st.session_state.user.id,
-                date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
+                user_id=st.session_state.user.id,                
+                date_range = f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=[],
                 gpt_score_text="",
@@ -187,9 +188,11 @@ elif seite == "🤖 GPT-Kategorisierung":
             st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
 
             # ✅ automatisch speichern nach GPT-Kategorisierung
+            min_datum = pd.to_datetime(df["datum"].min()).strftime("%Y-%m-%d")
+            max_datum = pd.to_datetime(df["datum"].max()).strftime("%Y-%m-%d")
             save_report(
-                user_id=st.session_state.user.id,
-                date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
+                user_id=st.session_state.user.id,                
+                date_range = f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 gpt_score_text="",
@@ -218,9 +221,11 @@ elif seite == "📊 Analyse & Score":
             st.markdown(auswertung)
 
            # ✅ automatisch speichern nach GPT-Auswertung
+            min_datum = pd.to_datetime(df["datum"].min()).strftime("%Y-%m-%d")
+            max_datum = pd.to_datetime(df["datum"].max()).strftime("%Y-%m-%d")
             save_report(
-                user_id=st.session_state.user.id,
-                date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
+                user_id=st.session_state.user.id,                
+                date_range = f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 gpt_score_text=auswertung,
