@@ -6,6 +6,7 @@ from supabase_client import sign_in, sign_up, sign_out, get_user, save_report, l
 import pandas as pd
 import asyncio
 import matplotlib.pyplot as plt
+import datetime
 
 
 st.set_page_config(page_title="Finanz-Dashboard", layout="wide")
@@ -140,6 +141,8 @@ seite = seite or "🔼 Transaktionen hochladen"
 # Session State für geteilte Daten
 if "df" not in st.session_state:
     st.session_state.df = None
+if "last_saved" not in st.session_state:
+    st.session_state.last_saved = None
 
 # ------------------- HAUPT-INHALTE -------------------
 
@@ -152,6 +155,18 @@ if seite == "🔼 Transaktionen hochladen":
             st.session_state.df = df
             st.success("Datei wurde erfolgreich geladen und erkannt.")
             st.dataframe(df)
+
+            # ✅ automatisch Speichern nach Upload
+            from supabase_client import save_report
+            save_report(
+                user_id=st.session_state.user.id,
+                date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
+                raw_data=df.to_dict(orient="records"),
+                gpt_categories=[],
+                gpt_score_text="",
+                model=GPT_MODE
+            )
+            st.session_state.last_saved = datetime.datetime.now()    
         else:
             st.error("Datei konnte nicht verarbeitet werden.")
 
@@ -171,6 +186,18 @@ elif seite == "🤖 GPT-Kategorisierung":
             st.success("GPT-Kategorisierung abgeschlossen.")
             st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
 
+            # ✅ automatisch speichern nach GPT-Kategorisierung
+            save_report(
+                user_id=st.session_state.user.id,
+                date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
+                raw_data=df.to_dict(orient="records"),
+                gpt_categories=df["GPT Kategorie"].tolist(),
+                gpt_score_text="",
+                model=GPT_MODE
+            )
+            st.session_state.last_saved = datetime.datetime.now()
+
+
 elif seite == "📊 Analyse & Score":
     st.header("Mini-Schufa Analyse (GPT)")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
@@ -184,16 +211,18 @@ elif seite == "📊 Analyse & Score":
             st.success("Analyse abgeschlossen")
             st.markdown(auswertung)
 
-            if st.button("💾 Bericht speichern"):
-                save_report(
-                    user_id=st.session_state.user.id,
-                    date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
-                    raw_data=df.to_dict(orient="records"),
-                    gpt_categories=df["GPT Kategorie"].tolist(),
-                    gpt_score_text=auswertung,
-                    model=GPT_MODE
-                )
-                st.success("Bericht erfolgreich in Supabase gespeichert.")
+           # ✅ automatisch speichern nach GPT-Auswertung
+            save_report(
+                user_id=st.session_state.user.id,
+                date_range=str(df["datum"].min().date()) + " - " + str(df["datum"].max().date()),
+                raw_data=df.to_dict(orient="records"),
+                gpt_categories=df["GPT Kategorie"].tolist(),
+                gpt_score_text=auswertung,
+                model=GPT_MODE
+            )
+            st.success("Bericht wurde automatisch gespeichert.")
+            st.session_state.last_saved = datetime.datetime.now()
+
 
 elif seite == "📈 Visualisierung":
     st.header("Visualisierung nach Monat und Kategorie")
