@@ -340,6 +340,8 @@ elif seite == "📂 Mein Verlauf":
 
                 if st.button(f"🔁 Bericht laden", key=f"bericht_{idx}"):
                     st.session_state.df = pd.DataFrame(eintrag["raw_data"])
+                    if "gpt_categories" in eintrag and eintrag["gpt_categories"]:
+                        st.session_state.df["GPT Kategorie"] = eintrag["gpt_categories"]
                     st.session_state.gpt_score = eintrag["gpt_score_text"]
                     st.session_state.seite = "📁 Bericht anzeigen"
                     st.rerun()
