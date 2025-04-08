@@ -129,14 +129,19 @@ if st.sidebar.button("🚪 Logout"):
 
 # ------------------- SIDEBAR -------------------
 st.sidebar.title("📂 Navigation")
-seite = st.sidebar.radio("Wähle eine Ansicht:", [
+seiten = [
     "🔼 Transaktionen hochladen",
     "🤖 GPT-Kategorisierung",
     "📊 Analyse & Score",
     "📈 Visualisierung",
     "📂 Mein Verlauf",
-    "📄 Bericht anzeigen",    
-])
+    "📁 Bericht anzeigen",
+]
+
+if "seite" not in st.session_state:
+    st.session_state.seite = seiten[0]
+
+seite = st.sidebar.radio("Wähle eine Ansicht:", seiten, index=seiten.index(st.session_state.seite))
 
 
 # ------------------- HAUPT-INHALTE -------------------
