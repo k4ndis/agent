@@ -238,7 +238,7 @@ elif seite == "📊 Analyse & Score":
                 auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
             st.success("Analyse abgeschlossen")
             st.markdown(auswertung)
-
+            
             # ✅ automatisch speichern nach GPT-Auswertung
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
             min_datum = df["datum"].min().strftime("%Y-%m-%d")
@@ -261,6 +261,14 @@ elif seite == "📊 Analyse & Score":
                 st.info(f"🟢 Zuletzt gespeichert: {letzte}")
             else:
                 st.warning("🔴 Noch nicht gespeichert.")
+
+        # ✅ GPT Empfehlungen (sichtbar unabhängig von Score-Auswertung)
+        if api_key and st.button("Empfehlungen anzeigen"):
+            from gpt_kategorisierung import gpt_empfehlungen
+            with st.spinner("GPT analysiert deine Daten für Empfehlungen..."):
+                empfehlung = gpt_empfehlungen(df, api_key, model=GPT_MODE)
+            st.subheader("📌 GPT-Empfehlungen")
+            st.markdown(empfehlung)
 
 
 # ------------------- Visualisierung -------------------
