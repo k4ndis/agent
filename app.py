@@ -270,6 +270,24 @@ elif seite == "📊 Analyse & Score":
             st.subheader("📌 GPT-Empfehlungen")
             st.markdown(empfehlung)
 
+             # ⏳ automatisch speichern
+            df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
+            min_datum = df["datum"].min().strftime("%Y-%m-%d")
+            max_datum = df["datum"].max().strftime("%Y-%m-%d")
+            df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
+
+            save_report(
+                user_id=st.session_state.user.id,
+                date_range=f"{min_datum} - {max_datum}",
+                raw_data=df.to_dict(orient="records"),
+                gpt_categories=df["GPT Kategorie"].tolist(),
+                gpt_score_text="",  # leer lassen wenn keine neue Score-Analyse
+                model=GPT_MODE,
+                gpt_recommendation=empfehlung
+            )
+            st.success("Empfehlung wurde automatisch gespeichert.")
+            st.session_state.last_saved = datetime.datetime.now()
+
 
 # ------------------- Visualisierung -------------------
 elif seite == "📈 Visualisierung":
@@ -390,6 +408,10 @@ elif seite == "📁 Bericht anzeigen":
             st.markdown(st.session_state.gpt_score)
         else:
             st.info("Für diesen Bericht wurde noch keine Analyse durchgeführt.")
+
+        if "gpt_recommendation" in eintrag and eintrag["gpt_recommendation"]:
+            st.subheader("📌 GPT-Empfehlungen")
+            st.markdown(eintrag["gpt_recommendation"])
 
         st.markdown("Letzter Sync: " + (
             st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")

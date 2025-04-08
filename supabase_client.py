@@ -29,7 +29,7 @@ def get_user():
         return None
 
 # ----------------------------- DB -----------------------------
-def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: list[str], gpt_score_text: str, model: str):
+def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: list[str], gpt_score_text: str, model: str, gpt_recommendation: str = ""):
     payload = {
         "user_id": user_id,
         "date_range": date_range,
@@ -37,6 +37,7 @@ def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: l
         "gpt_categories": gpt_categories,
         "gpt_score_text": gpt_score_text,
         "model": model,
+        "gpt_recommendation": gpt_recommendation,
         "created_at": datetime.datetime.now().isoformat()
     }
     return supabase.table("reports").insert(payload).execute()
