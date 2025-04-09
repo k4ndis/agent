@@ -11,13 +11,37 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     prompt = f"""
 Du bist eine KI zur Bewertung von Finanzverhalten.
 
-Hier sind die Transaktionen und ihre GPT-Kategorien:
+Hier sind Transaktionen mit ihren GPT-Kategorien:
 
 {zusammenfassung}
 
-Analysiere das Verhalten, erkenne Muster (z. B. viele Abos, hohe Mobilitätskosten) 
-und gib eine Einschätzung zur finanziellen Stabilität und Kreditwürdigkeit ab.
+Bitte analysiere:
+1. Wie hoch ist der ungefähre Anteil fixer Ausgaben (z. B. Miete, Abos, Versicherungen)?
+2. Welche Ausgaben erscheinen optional oder vermeidbar?
+3. Gibt es auffällige Muster wie viele Bestellungen, hohe Mobilitätskosten, Spontankäufe?
+
+Wie würde eine Bank dieses Verhalten bewerten in Bezug auf:
+- Rücklagen (Sparquote)
+- Kreditwürdigkeit
+- Risiko (z. B. Dispo-Nutzung, Luxusausgaben, Spontanausgaben)
+
+Gib anschließend folgende Einschätzungen:
+- Sparquote: XX %
+- Kreditwürdigkeit: niedrig / mittel / hoch
+- Risiko: niedrig / mittel / hoch
+
+Dann bewerte das Verhalten **auf einer Skala von 0 bis 100**:
+- 0 = sehr kritisch
+- 50 = durchschnittlich
+- 100 = sehr solide, finanziell stabil
+
+Format:
+Score: 78
+
+Erkläre dann kurz, wie du zu dieser Bewertung kommst.
 """
+
+
 
     try:
         response = client.chat.completions.create(
@@ -51,18 +75,32 @@ def gpt_empfehlungen(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
 
     prompt = f"""
-Du bist ein Finanz-Coach. Hier sind Transaktionen mit GPT-Kategorien:
+Du bist ein erfahrener Finanz-Coach und hilfst Menschen, ihre Ausgaben zu optimieren.
+
+Hier sind Transaktionen mit ihren GPT-Kategorien:
 
 {zusammenfassung}
 
-Gib Empfehlungen für folgendes:
-1. Wo lassen sich Ausgaben sparen?
-2. Gibt es ungewöhnliche oder risikobehaftete Transaktionen?
-3. Welche Abos könnten unnötig sein?
-4. Gibt es Spielraum für Investitionen oder Rücklagen?
+Bitte beantworte folgende Punkte übersichtlich und konkret:
 
-Antworte kurz, hilfreich und in verständlicher Sprache.
+1. **Top 3 Spartipps**  
+   Welche Ausgaben sind vermeidbar oder überdurchschnittlich hoch?
+
+2. **Abo-Check**  
+   Gibt es laufende Abos, die nicht notwendig oder überflüssig wirken?
+
+3. **Risikofaktoren**  
+   Welche Ausgaben könnten auf ein ungesundes oder riskantes Finanzverhalten hindeuten?
+
+4. **Sparpotenzial & Rücklagen**  
+   Wo könnte man mehr Geld zurücklegen oder investieren?
+
+5. **Dein Fazit**  
+   Was wäre dein wichtigster Ratschlag für die nächsten 30 Tage?
+
+Bitte antworte in kurzen Absätzen mit klaren Tipps, ohne Fachjargon.
 """
+
 
     try:
         response = client.chat.completions.create(
