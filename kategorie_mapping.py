@@ -32,6 +32,8 @@ MAPPING = {
 
     "miete": "Wohnen",
     "nebenkosten": "Wohnen",
+    "strom": "Wohnen", 
+    "gas": "Wohnen", 
     "ikea": "Wohnen",
 
     "bahn": "Mobilität",
@@ -59,7 +61,9 @@ MAPPING = {
     "zalando": "Shopping",
 
     "o2": "Abos",
-    "vodafone": "Abos",   
+    "vodafone": "Abos",  
+    
+    "vertrag": "Vertrag", 
 
 
 }
