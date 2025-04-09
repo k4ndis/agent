@@ -28,6 +28,7 @@ MAPPING = {
     "haftpflicht": "Versicherungen",
     "hausrat": "Versicherungen",
     "kfz": "Versicherungen",
+    "helvetia": "Versicherungen",
 
     "miete": "Wohnen",
     "nebenkosten": "Wohnen",
@@ -52,6 +53,7 @@ MAPPING = {
     "konto": "Bankgebühren",
     "paypal": "paypal",
     "kreditkarte": "Kreditkarte",
+    "kartenzahlung": "EC Karte",
 
     "amazon": "Shopping",
     "zalando": "Shopping",

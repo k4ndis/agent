@@ -275,8 +275,14 @@ elif seite == "📊 Analyse & Score":
             from gpt_kategorisierung import gpt_empfehlungen
             with st.spinner("GPT analysiert deine Daten für Empfehlungen..."):
                 empfehlung = gpt_empfehlungen(df, api_key, model=GPT_MODE)
+                st.session_state["gpt_empfehlung"] = empfehlung
+            st.success("Empfehlung wurde erstellt.")
+
+        # 🎯 Immer anzeigen, wenn vorhanden
+        if "gpt_empfehlung" in st.session_state:
             st.subheader("📌 GPT-Empfehlungen")
-            st.markdown(empfehlung)
+            st.markdown(st.session_state["gpt_empfehlung"])
+
 
              # ⏳ automatisch speichern
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
@@ -291,7 +297,7 @@ elif seite == "📊 Analyse & Score":
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 gpt_score_text="",  # leer lassen wenn keine neue Score-Analyse
                 model=GPT_MODE,
-                gpt_recommendation=empfehlung
+                gpt_recommendation=st.session_state.get("gpt_empfehlung", "")
             )
             st.success("Empfehlung wurde automatisch gespeichert.")
             st.session_state.last_saved = datetime.datetime.now()
@@ -364,7 +370,6 @@ elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
         st.info("Noch keine gespeicherten Berichte vorhanden.")
 
 
-# ------------------- Mein Verlauf -------------------
 elif seite == "📂 Mein Verlauf":
     st.header("📂 Mein persönlicher Analyse-Verlauf")
     from supabase_client import load_reports
@@ -372,8 +377,17 @@ elif seite == "📂 Mein Verlauf":
     res = load_reports(st.session_state.user.id)
 
     if res.data:
-        for idx, eintrag in enumerate(res.data[::-1]):  # neueste oben
-            with st.expander(f"🗓 {eintrag['date_range']} – {eintrag['model']}"):
+        # Berichte umkehren: neueste zuerst
+        reports = res.data[::-1]
+
+        for idx, eintrag in enumerate(reports):
+            date_range = eintrag.get("date_range", "Unbekannt")
+            modell = eintrag.get("model", "")
+            created_at = eintrag.get("created_at", "")
+            created_short = created_at[:10] if created_at else "?"
+            nummer = f"{len(reports) - idx:02d}"  # z. B. 01, 02, 03 …
+
+            with st.expander(f"{nummer}. 📅 {date_range} ({modell}) – erstellt am {created_short}"):
                 st.markdown(f"**Score:** {eintrag['gpt_score_text'][:300]}..." if eintrag["gpt_score_text"] else "_(keine Bewertung)_")
                 st.dataframe(pd.DataFrame(eintrag["raw_data"]))
 
@@ -381,9 +395,9 @@ elif seite == "📂 Mein Verlauf":
                     st.session_state.selected_report = eintrag
                     st.session_state.seite = "📁 Bericht anzeigen"
                     st.rerun()
-
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
+
 
 
 # ------------------- Bericht anzeigen -------------------
