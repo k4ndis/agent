@@ -57,6 +57,7 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
             print(f"Fehler bei Chunk: {e}")
             kategorien_neu.extend(["Fehler"] * len(chunk))
 
+
     # Speichern
     with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(gpt_cache, f, ensure_ascii=False, indent=2)

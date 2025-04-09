@@ -3,6 +3,9 @@ MAPPING = {
     "disney": "Entertainment",
     "prime": "Entertainment",
     "kino": "Entertainment",
+    "supermarkt": "Lebensmittel",
+    "spotify": "Entertainment",
+    "deezer": "Entertainment",
 
     "rewe": "Lebensmittel",
     "edeka": "Lebensmittel",
@@ -19,6 +22,8 @@ MAPPING = {
     "klinik": "Gesundheit",
     "zahnarzt": "Gesundheit",
 
+    "dm": "Drogerie",
+
     "versicherung": "Versicherungen",
     "haftpflicht": "Versicherungen",
     "hausrat": "Versicherungen",
@@ -26,6 +31,7 @@ MAPPING = {
 
     "miete": "Wohnen",
     "nebenkosten": "Wohnen",
+    "ikea": "Wohnen",
 
     "bahn": "Mobilität",
     "tankstelle": "Mobilität",
@@ -44,6 +50,16 @@ MAPPING = {
 
     "gebühr": "Gebühren",
     "konto": "Bankgebühren",
+    "paypal": "paypal",
+    "kreditkarte": "Kreditkarte",
+
+    "amazon": "Shopping",
+    "zalando": "Shopping",
+
+    "o2": "Abos",
+    "vodafone": "Abos",   
+
+
 }
 
 

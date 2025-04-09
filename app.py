@@ -136,6 +136,8 @@ seiten = [
     "📈 Visualisierung",
     "📂 Mein Verlauf",
     "📁 Bericht anzeigen",
+    "🧪 Mapping-Check",
+
 ]
 
 if "seite" not in st.session_state:
@@ -418,5 +420,64 @@ elif seite == "📁 Bericht anzeigen":
             if st.session_state.last_saved else "–"
         ))
 
+
+# ------------------- Mapping Check -------------------
+elif seite == "🧪 Mapping-Check":
+    st.header("🧪 GPT → Mapping Analyse")
+
+    if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
+        st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
+    else:
+        df = st.session_state.df.copy()
+        df["GPT Rohkategorie"] = df["GPT Kategorie"]
+        from kategorie_mapping import map_to_standardkategorie
+        df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
+        df["Status"] = df.apply(
+            lambda row: "✅" if row["Gemappte Kategorie"] != "Sonstiges" else "⚠️ Nicht gemappt",
+            axis=1
+        )
+
+        st.success(f"{len(df)} Transaktionen geprüft.")
+        st.dataframe(df[["beschreibung", "GPT Rohkategorie", "Gemappte Kategorie", "Status"]])
+
+        anzahl_nicht_gemappt = df[df["Gemappte Kategorie"] == "Sonstiges"].shape[0]
+        gesamt = df.shape[0]
+        st.markdown(f"🔎 **Nicht gemappt:** {anzahl_nicht_gemappt} von {gesamt} → **{round(anzahl_nicht_gemappt / gesamt * 100, 2)} %**")
+
+        api_key = st.text_input("🔑 OpenAI API Key (für Vorschläge)", type="password")
+        if api_key and anzahl_nicht_gemappt > 0:
+            from openai import OpenAI
+
+            @st.cache_data(show_spinner="GPT generiert Vorschläge...")
+            def gpt_mapping_vorschlag(gpt_output: str) -> str:
+                client = OpenAI(api_key=api_key)
+                prompt = f"""
+Die Kategorie „{gpt_output}“ stammt aus einer KI-Kategorisierung von Finanztransaktionen.
+
+Ordne sie einer der folgenden Standard-Kategorien zu:
+- Lebensmittel, Mobilität, Shopping, Abos, Gesundheit, Versicherungen,
+  Wohnen, Gebühren, Reisen, Entertainment, Fitness, Spenden, Steuern,
+  Einkommen, Bankgebühren, Sonstiges
+
+Antworte **nur mit einem der Begriffe**.
+"""
+                try:
+                    response = client.chat.completions.create(
+                        model="gpt-4",
+                        messages=[
+                            {"role": "system", "content": "Du bist ein Mapping-Coach für Finanzkategorien."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.0,
+                        max_tokens=20
+                    )
+                    return response.choices[0].message.content.strip()
+                except Exception as e:
+                    return f"Fehler: {e}"
+
+            st.subheader("💡 GPT-Vorschläge für fehlende Mappings")
+            fehlende = df[df["Gemappte Kategorie"] == "Sonstiges"].copy()
+            fehlende["GPT-Vorschlag"] = fehlende["GPT Rohkategorie"].apply(gpt_mapping_vorschlag)
+            st.dataframe(fehlende[["GPT Rohkategorie", "GPT-Vorschlag"]])
 
 
