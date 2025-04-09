@@ -258,9 +258,10 @@ elif seite == "📊 Analyse & Score":
                 date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
-                gpt_score_text=auswertung,
+                gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ fix
                 model=GPT_MODE
             )
+
             st.success("Bericht wurde automatisch gespeichert.")
             st.session_state.last_saved = datetime.datetime.now()
 
@@ -269,6 +270,7 @@ elif seite == "📊 Analyse & Score":
                 st.info(f"🟢 Zuletzt gespeichert: {letzte}")
             else:
                 st.warning("🔴 Noch nicht gespeichert.")
+
 
         # ✅ GPT Empfehlungen (sichtbar unabhängig von Score-Auswertung)
         if api_key and st.button("Empfehlungen anzeigen"):
