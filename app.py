@@ -199,11 +199,14 @@ elif seite == "🤖 GPT-Kategorisierung":
         if api_key:
             alle_beschreibungen = df["beschreibung"].tolist()
             with st.spinner(f"Starte GPT-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
-                kategorien = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
-            df["GPT Kategorie"] = kategorien
+                roh_kategorien, gemappt = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
+
+            df["GPT Rohkategorie"] = roh_kategorien
+            df["GPT Kategorie"] = gemappt
+
             st.session_state.df = df
             st.success("GPT-Kategorisierung abgeschlossen.")
-            st.dataframe(df[["beschreibung", "betrag", "GPT Kategorie"]])
+            st.dataframe(df[["beschreibung", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
 
             # ✅ automatisch speichern nach GPT-Kategorisierung
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")

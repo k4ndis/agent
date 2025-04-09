@@ -8,20 +8,34 @@ from kategorie_mapping import map_to_standardkategorie
 def chunkify(lst, n):
     return [lst[i:i + n] for i in range(0, len(lst), n)]
 
-async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, model: str = "gpt-4-turbo") -> list[str]:
+async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, model: str = "gpt-4-turbo") -> tuple[list[str], list[str]]:
     client = AsyncOpenAI(api_key=api_key)
 
-    prompt_template = """Analysiere die folgenden Transaktionen und gib jeweils eine passende Kategorie in einem Wort oder kurzer Phrase zurück.
+    prompt_template = """Ordne den folgenden Transaktionen jeweils **genau eine** dieser festen Kategorien zu:
 
-    Beispielhafte Kategorien (nur zur Inspiration, kein Muss):
-    - Lebensmittel, Miete, Gehalt, Fitness, Streaming, Arztkosten, Versicherung, Reisen, Spende, Gebühren
+- Lebensmittel
+- Mobilität
+- Shopping
+- Abonnements
+- Einkommen
+- Versicherungen
+- Wohnen
+- Gebühren
+- Kredite
+- Steuern
+- Bargeld
+- Spenden
+- Gesundheit
+- Fitness
+- Drogerie
+- Unterhaltung
+- Sonstiges
 
-    Transaktionen:
-    {texte}
+Transaktionen:
+{texte}
 
-    Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
-    """
-
+Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
+"""
 
     cache_file = "gpt_cache.json"
     gpt_cache = {}
@@ -33,7 +47,8 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
     beschreibungen_neu = [b for b in beschreibungen if b not in gpt_cache]
     print(f"➕ {len(beschreibungen_neu)} neue Transaktionen werden analysiert.")
 
-    kategorien_neu = []
+    kategorien_roh = []
+    kategorien_gemappt = []
 
     chunks = chunkify(beschreibungen_neu, 20)
     for chunk in chunks:
@@ -42,7 +57,7 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
             response = await client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "Du bist ein intelligenter Finanzassistent. Du analysierst Transaktionen und findest kurze, passende Kategoriebeschreibungen – möglichst in einem Wort oder kurzer Phrase."},
+                    {"role": "system", "content": "Du bist ein intelligenter Finanzassistent. Du wählst eine passende Standard-Kategorie pro Transaktion aus."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=1000,
@@ -52,10 +67,21 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
             lines = [line.strip() for line in content.splitlines() if line.strip()]
             for original, kategorie in zip(chunk, lines):
                 gpt_cache[original] = kategorie
-                kategorien_neu.append(kategorie)
         except Exception as e:
             print(f"Fehler bei Chunk: {e}")
-            kategorien_neu.extend(["Fehler"] * len(chunk))
+            for original in chunk:
+                gpt_cache[original] = "Fehler"
+
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(gpt_cache, f, ensure_ascii=False, indent=2)
+
+    for beschreibung in beschreibungen:
+        roh = gpt_cache.get(beschreibung, "Fehler")
+        kategorien_roh.append(roh)
+        kategorien_gemappt.append(map_to_standardkategorie(roh))
+
+    return kategorien_roh, kategorien_gemappt
+
 
 
     # Speichern
