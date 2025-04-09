@@ -238,8 +238,14 @@ elif seite == "📊 Analyse & Score":
         if api_key and st.button("Finanzverhalten analysieren"):
             with st.spinner("GPT bewertet dein Finanzverhalten..."):
                 auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
+                st.session_state["gpt_score"] = auswertung
             st.success("Analyse abgeschlossen")
-            st.markdown(auswertung)
+
+        # 🎯 Anzeige der gespeicherten Auswertung (auch nach Klick auf „Empfehlungen anzeigen“)
+        if "gpt_score" in st.session_state:
+            st.subheader("🧠 GPT Analyse des Finanzverhaltens")
+            st.markdown(st.session_state["gpt_score"])
+
             
             # ✅ automatisch speichern nach GPT-Auswertung
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
