@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 from openai import AsyncOpenAI
+from kategorie_mapping import map_to_standardkategorie
+
 
 def chunkify(lst, n):
     return [lst[i:i + n] for i in range(0, len(lst), n)]
@@ -9,26 +11,17 @@ def chunkify(lst, n):
 async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, model: str = "gpt-4-turbo") -> list[str]:
     client = AsyncOpenAI(api_key=api_key)
 
-    prompt_template = """Ordne den folgenden Transaktionen jeweils **eine** Ausgabenkategorie zu:
+    prompt_template = """Analysiere die folgenden Transaktionen und gib jeweils eine passende Kategorie in einem Wort oder kurzer Phrase zurück.
 
-- Lebensmittel
-- Mobilität
-- Shopping
-- Abos
-- Einkommen
-- Sonstiges
+    Beispielhafte Kategorien (nur zur Inspiration, kein Muss):
+    - Lebensmittel, Miete, Gehalt, Fitness, Streaming, Arztkosten, Versicherung, Reisen, Spende, Gebühren
 
-Beispielausgabe:
-Shopping  
-Abos  
-Einkommen  
-...
+    Transaktionen:
+    {texte}
 
-Transaktionen:
-{texte}
+    Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
+    """
 
-Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
-"""
 
     cache_file = "gpt_cache.json"
     gpt_cache = {}
@@ -49,7 +42,7 @@ Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
             response = await client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "Du bist ein präziser Finanz-Kategorisierer."},
+                    {"role": "system", "content": "Du bist ein intelligenter Finanzassistent. Du analysierst Transaktionen und findest kurze, passende Kategoriebeschreibungen – möglichst in einem Wort oder kurzer Phrase."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=1000,
@@ -67,6 +60,7 @@ Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
     # Speichern
     with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(gpt_cache, f, ensure_ascii=False, indent=2)
+   
+    # GPT-Kategorien abrufen und mappen
+    return [map_to_standardkategorie(gpt_cache.get(b, "Fehler")) for b in beschreibungen]
 
-    # Finaler Rückgabewert
-    return [gpt_cache.get(b, "Fehler") for b in beschreibungen]
