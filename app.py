@@ -455,16 +455,16 @@ elif seite == "🧪 Mapping-Check":
         st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
     else:
         df = st.session_state.df.copy()
-        df["GPT Rohkategorie"] = df["GPT Kategorie"]
+        
         from kategorie_mapping import map_to_standardkategorie
-        df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
+        df["Gemappte Kategorie"] = df["GPT Rohkategorie"].apply(map_to_standardkategorie)
         df["Status"] = df.apply(
             lambda row: "✅" if row["Gemappte Kategorie"] != "Sonstiges" else "⚠️ Nicht gemappt",
             axis=1
         )
 
         st.success(f"{len(df)} Transaktionen geprüft.")
-        st.dataframe(df[["beschreibung", "GPT Rohkategorie", "Gemappte Kategorie", "Status"]])
+        st.dataframe(df[["beschreibung", "GPT Rohkategorie", "GPT Kategorie", "Gemappte Kategorie", "Status"]])
 
         anzahl_nicht_gemappt = df[df["Gemappte Kategorie"] == "Sonstiges"].shape[0]
         gesamt = df.shape[0]
