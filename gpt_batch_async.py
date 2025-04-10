@@ -55,9 +55,12 @@ Transaktionen:
 Antwort: **Nur die Kategorien – eine pro Zeile**, ohne zusätzliche Erklärungen oder Nummerierungen.
 """
 
-    cache_file = "gpt_cache.json"
-    gpt_cache = {}
+    # 🔐 Cache-Pfad vorbereiten
+    CACHE_DIR = os.path.join(os.getcwd(), "cache")
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    cache_file = os.path.join(CACHE_DIR, "gpt_cache.json")
 
+    gpt_cache = {}
     if os.path.exists(cache_file):
         with open(cache_file, "r", encoding="utf-8") as f:
             gpt_cache = json.load(f)
