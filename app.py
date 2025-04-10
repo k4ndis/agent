@@ -204,6 +204,22 @@ elif seite == "🤖 GPT-Kategorisierung":
             df["GPT Rohkategorie"] = roh_kategorien
             df["GPT Kategorie"] = gemappt
 
+            # ✅ GPT Kategorie korrigieren, wenn Rohkategorie eigentlich schon passt
+            VALID_KATEGORIEN = [
+                "Lebensmittel", "Mobilität", "Shopping", "Abonnements", "Einkommen",
+                "Versicherungen", "Wohnen", "Nebenkosten", "Gebühren", "Bankdienste",
+                "EC Karte", "Kreditkarte", "Bargeld", "Kredite", "Steuern",
+                "Spenden", "Gesundheit", "Fitness", "Drogerie", "Unterhaltung"
+            ]
+
+            df["GPT Kategorie"] = df.apply(
+                lambda row: row["GPT Rohkategorie"]
+                if row["GPT Kategorie"] == "Sonstiges" and row["GPT Rohkategorie"] in VALID_KATEGORIEN
+                else row["GPT Kategorie"],
+                axis=1
+)
+
+
             st.session_state.df = df
             st.success("GPT-Kategorisierung abgeschlossen.")
             st.dataframe(df[["beschreibung", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
