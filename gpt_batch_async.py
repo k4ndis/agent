@@ -8,13 +8,14 @@ from kategorie_mapping import map_to_standardkategorie
 def chunkify(lst, n):
     return [lst[i:i + n] for i in range(0, len(lst), n)]
 
+
 async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, model: str = "gpt-4-turbo") -> tuple[list[str], list[str]]:
     client = AsyncOpenAI(api_key=api_key)
 
     prompt_template = """
-Du bist ein spezialisierter Finanz-Kategorisierungsassistent für Banktransaktionen in Deutschland.
+Du bist ein spezialisierter KI-Assistent für die Kategorisierung von Banktransaktionen in Deutschland.
 
-Ordne jede Transaktion **genau einer** dieser Standard-Kategorien zu:
+Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
 
 - Lebensmittel
 - Mobilität
@@ -25,28 +26,34 @@ Ordne jede Transaktion **genau einer** dieser Standard-Kategorien zu:
 - Wohnen
 - Nebenkosten
 - Gebühren
+- Bankdienste
+- EC Karte
+- Kreditkarte
+- Bargeld
 - Kredite
 - Steuern
-- Bargeld
 - Spenden
 - Gesundheit
-- Fitness
-- Drogerie
-- Unterhaltung
 - Sonstiges
 
-Berücksichtige auch:
-- Geldautomat, ATM → Bargeld
-- Kartenzahlung, Kreditkarte → Gebühren / EC Karte / Kreditkarte
-- Vodafone, Telekom, Gas, Strom → Nebenkosten
-- Bestellungen, Onlinekäufe → Shopping
+❗️Wichtige Hinweise:
+- Kartenzahlung, Kartengebühr, EC, Visa, Mastercard → EC Karte oder Kreditkarte
+- Geldautomat, ATM, Bargeldabhebung → Bargeld
+- Strom, Gas, Telekom, Internet → Nebenkosten
+- Spotify, Netflix, Mobilfunkverträge → Abonnements
+- Amazon, Zalando, Ikea → Shopping
+- Geldeingang, Überweisung, Gehalt → Einkommen
+- Krankenkasse, Apotheke, Rezept → Gesundheit
+- Schufa, Kontoführung, Gebühren → Bankdienste oder Gebühren
+- Wenn nicht eindeutig → Sonstiges
+
+Gib nur eine Kategorie pro Zeile aus, in exakt der Reihenfolge der Transaktionen.
 
 Transaktionen:
 {texte}
 
-Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
+Antwort: **Nur die Kategorien – eine pro Zeile**, ohne zusätzliche Erklärungen oder Nummerierungen.
 """
-
 
     cache_file = "gpt_cache.json"
     gpt_cache = {}
@@ -68,7 +75,7 @@ Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
             response = await client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "Du bist ein intelligenter Finanzassistent. Du wählst eine passende Standard-Kategorie pro Transaktion aus."},
+                    {"role": "system", "content": "Du bist ein präziser Finanz-Kategorisierer."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=1000,

@@ -6,12 +6,16 @@ MAPPING = {
     "kino": "Entertainment",
     "sky": "Entertainment",
     "wow": "Entertainment",
-    "spotify": "Abos",
-    "deezer": "Abos",
-    "youtube premium": "Abos",
-    "apple music": "Abos",
-    "abo": "Abos",
-    "abonnement": "Abos",
+    "spotify": "Abonnements",
+    "deezer": "Abonnements",
+    "youtube premium": "Abonnements",
+    "apple music": "Abonnements",
+    "abo": "Abonnements",
+    "abonnement": "Abonnements",
+    "vertrag": "Abonnements",
+    "handyvertrag": "Abonnements",
+    "mobilfunk": "Abonnements",
+    "mobilcom": "Abonnements",
 
     # 🛒 Lebensmittel & Drogerie
     "supermarkt": "Lebensmittel",
@@ -20,14 +24,19 @@ MAPPING = {
     "aldi": "Lebensmittel",
     "lidl": "Lebensmittel",
     "kaufland": "Lebensmittel",
+    "essen": "Lebensmittel",
+    "lebensmittel": "Lebensmittel",
     "dm": "Drogerie",
     "rossmann": "Drogerie",
+    "drogerie": "Drogerie",
 
     # 🏥 Gesundheit & Fitness
     "arzt": "Gesundheit",
     "apotheke": "Gesundheit",
     "klinik": "Gesundheit",
     "zahnarzt": "Gesundheit",
+    "rezept": "Gesundheit",
+    "krankenkasse": "Gesundheit",
     "fitx": "Fitness",
     "mcfit": "Fitness",
     "urban sports": "Fitness",
@@ -35,7 +44,9 @@ MAPPING = {
 
     # 🏠 Wohnen & Nebenkosten
     "miete": "Wohnen",
+    "kaltmiete": "Wohnen",
     "ikea": "Wohnen",
+    "möbel": "Wohnen",
     "nebenkosten": "Nebenkosten",
     "strom": "Nebenkosten",
     "gas": "Nebenkosten",
@@ -55,10 +66,13 @@ MAPPING = {
     "escooter": "Mobilität",
     "tier": "Mobilität",
     "lime": "Mobilität",
-    "flug": "Reisen",
-    "hotel": "Reisen",
     "tankstelle": "Mobilität",
     "tanken": "Mobilität",
+    "fahrt": "Mobilität",
+    "parkgebühr": "Mobilität",
+    "fahrkarte": "Mobilität",
+    "flug": "Reisen",
+    "hotel": "Reisen",
 
     # 📦 Shopping & Onlinekäufe
     "amazon": "Shopping",
@@ -67,19 +81,30 @@ MAPPING = {
     "onlinekauf": "Shopping",
     "shop": "Shopping",
     "mode": "Shopping",
+    "onlineshopping": "Shopping",
+    "versand": "Shopping",
 
     # 🧾 Gebühren & Banktransaktionen
-    "gebühr": "Bankgebühren",
-    "bankgebühr": "Bankgebühren",
-    "kontoentgelt": "Bankgebühren",
-    "überziehungszins": "Bankgebühren",
-    "dispo": "Bankgebühren",
+    "gebühr": "Gebühren",
+    "bankgebühr": "Gebühren",
+    "kontoentgelt": "Gebühren",
+    "überziehungszins": "Gebühren",
+    "dispo": "Gebühren",
+    "schufa": "Gebühren",
     "paypal": "Bankdienste",
+    "klarna": "Bankdienste",
+    "sofort": "Bankdienste",
+    "überweisung": "Bankdienste",
+    "lastschrift": "Bankdienste",
     "kartenzahlung": "EC Karte",
+    "ec": "EC Karte",
     "kreditkarte": "Kreditkarte",
+    "visa": "Kreditkarte",
+    "mastercard": "Kreditkarte",
     "geldautomat": "Bargeld",
     "atm": "Bargeld",
     "abhebung": "Bargeld",
+    "bargeld": "Bargeld",
 
     # 🧾 Versicherungen
     "versicherung": "Versicherungen",
@@ -88,25 +113,30 @@ MAPPING = {
     "kfz": "Versicherungen",
     "helvetia": "Versicherungen",
     "hdi": "Versicherungen",
+    "allianz": "Versicherungen",
+    "ergo": "Versicherungen",
 
     # 💼 Einkommen & Steuern
     "gehalt": "Einkommen",
     "lohn": "Einkommen",
     "überweisung von": "Einkommen",
-    "steuer": "Steuern",
-    "finanzamt": "Steuern",
     "rückzahlung": "Einkommen",
     "erstattung": "Einkommen",
+    "bonus": "Einkommen",
+    "finanzamt": "Steuern",
+    "steuer": "Steuern",
+    "einkommensteuer": "Steuern",
 
     # ❤️ Spenden & Kirchen
     "spende": "Spenden",
     "kirche": "Spenden",
     "kollekte": "Spenden",
 
-    # 📱 Verträge & Sonstiges
-    "vertrag": "Abos",
-    "handyvertrag": "Abos",
-    "mobilfunk": "Abos",
+    # 💳 Kredite
+    "kreditrate": "Kredite",
+    "kredit": "Kredite",
+    "finanzierung": "Kredite",
+    "ratenkauf": "Kredite"
 }
 
 
