@@ -142,7 +142,21 @@ MAPPING = {
 
 def map_to_standardkategorie(gpt_output: str) -> str:
     gpt_output = gpt_output.lower()
+
+    # ✅ Direktübernahme, wenn GPT-Kategorie schon eine gültige ist
+    VALID_KATEGORIEN = {
+        "lebensmittel", "mobilität", "shopping", "abonnements", "einkommen",
+        "versicherungen", "wohnen", "nebenkosten", "gebühren", "bankdienste",
+        "ec karte", "kreditkarte", "bargeld", "kredite", "steuern",
+        "spenden", "gesundheit", "fitness", "drogerie", "unterhaltung"
+    }
+    if gpt_output in VALID_KATEGORIEN:
+        return gpt_output.title()  # z. B. "Einkommen"
+
+    # 🔍 Keyword-basiertes Mapping
     for keyword, standard in MAPPING.items():
         if keyword in gpt_output:
             return standard
+
     return "Sonstiges"
+
