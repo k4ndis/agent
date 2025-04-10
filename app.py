@@ -175,6 +175,7 @@ if seite == "🔼 Transaktionen hochladen":
                 date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=[],
+                mapped_categories=[],
                 gpt_score_text="",
                 model=GPT_MODE
             )
