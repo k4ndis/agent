@@ -217,7 +217,11 @@ elif seite == "🤖 GPT-Kategorisierung":
                 if row["GPT Kategorie"] == "Sonstiges" and row["GPT Rohkategorie"] in VALID_KATEGORIEN
                 else row["GPT Kategorie"],
                 axis=1
-)
+            )
+
+            from kategorie_mapping import map_to_standardkategorie
+            df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
+
 
 
             st.session_state.df = df
@@ -235,6 +239,7 @@ elif seite == "🤖 GPT-Kategorisierung":
                 date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
+                mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text="",
                 model=GPT_MODE
             )
@@ -438,6 +443,9 @@ elif seite == "📁 Bericht anzeigen":
         df = pd.DataFrame(eintrag["raw_data"])
         if "gpt_categories" in eintrag and eintrag["gpt_categories"]:
             df["GPT Kategorie"] = eintrag["gpt_categories"]
+
+        if "mapped_categories" in eintrag and eintrag["mapped_categories"]:
+            df["Gemappte Kategorie"] = eintrag["mapped_categories"]
 
         # jetzt setzen
         st.session_state.df = df
