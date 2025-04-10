@@ -283,6 +283,7 @@ elif seite == "📊 Analyse & Score":
                 date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
+                mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ fix
                 model=GPT_MODE
             )
@@ -322,6 +323,7 @@ elif seite == "📊 Analyse & Score":
                 date_range=f"{min_datum} - {max_datum}",
                 raw_data=df.to_dict(orient="records"),
                 gpt_categories=df["GPT Kategorie"].tolist(),
+                mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ wichtig!
                 model=GPT_MODE,
                 gpt_recommendation=st.session_state.get("gpt_empfehlung", "")
