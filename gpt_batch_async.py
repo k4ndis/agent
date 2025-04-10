@@ -11,7 +11,10 @@ def chunkify(lst, n):
 async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, model: str = "gpt-4-turbo") -> tuple[list[str], list[str]]:
     client = AsyncOpenAI(api_key=api_key)
 
-    prompt_template = """Ordne den folgenden Transaktionen jeweils **genau eine** dieser festen Kategorien zu:
+    prompt_template = """
+Du bist ein spezialisierter Finanz-Kategorisierungsassistent für Banktransaktionen in Deutschland.
+
+Ordne jede Transaktion **genau einer** dieser Standard-Kategorien zu:
 
 - Lebensmittel
 - Mobilität
@@ -20,6 +23,7 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
 - Einkommen
 - Versicherungen
 - Wohnen
+- Nebenkosten
 - Gebühren
 - Kredite
 - Steuern
@@ -31,11 +35,18 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
 - Unterhaltung
 - Sonstiges
 
+Berücksichtige auch:
+- Geldautomat, ATM → Bargeld
+- Kartenzahlung, Kreditkarte → Gebühren / EC Karte / Kreditkarte
+- Vodafone, Telekom, Gas, Strom → Nebenkosten
+- Bestellungen, Onlinekäufe → Shopping
+
 Transaktionen:
 {texte}
 
 Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
 """
+
 
     cache_file = "gpt_cache.json"
     gpt_cache = {}
@@ -81,13 +92,3 @@ Antwort: Nur die Kategorien, **eine pro Zeile**, in derselben Reihenfolge.
         kategorien_gemappt.append(map_to_standardkategorie(roh))
 
     return kategorien_roh, kategorien_gemappt
-
-
-
-    # Speichern
-    with open(cache_file, "w", encoding="utf-8") as f:
-        json.dump(gpt_cache, f, ensure_ascii=False, indent=2)
-   
-    # GPT-Kategorien abrufen und mappen
-    return [map_to_standardkategorie(gpt_cache.get(b, "Fehler")) for b in beschreibungen]
-

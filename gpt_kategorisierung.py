@@ -25,20 +25,14 @@ Wie würde eine Bank dieses Verhalten bewerten in Bezug auf:
 - Kreditwürdigkeit
 - Risiko (z. B. Dispo-Nutzung, Luxusausgaben, Spontanausgaben)
 
-Gib anschließend folgende Einschätzungen:
-- Sparquote: XX %
-- Kreditwürdigkeit: niedrig / mittel / hoch
-- Risiko: niedrig / mittel / hoch
+Bitte gib am Ende folgende Werte explizit aus:
 
-Dann bewerte das Verhalten **auf einer Skala von 0 bis 100**:
-- 0 = sehr kritisch
-- 50 = durchschnittlich
-- 100 = sehr solide, finanziell stabil
+#SPARQUOTE: XX %
+#KREDITWÜRDIGKEIT: niedrig/mittel/hoch
+#RISIKO: niedrig/mittel/hoch
+#SCORE: 73
 
-Format:
-Score: 78
-
-Erkläre dann kurz, wie du zu dieser Bewertung kommst.
+Erkläre in 2–3 kurzen Sätzen, wie du zu dieser Einschätzung kommst.
 """
 
 
