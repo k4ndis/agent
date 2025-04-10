@@ -45,6 +45,8 @@ Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
 - Geldeingang, Überweisung, Gehalt → Einkommen
 - Krankenkasse, Apotheke, Rezept → Gesundheit
 - Schufa, Kontoführung, Gebühren → Bankdienste oder Gebühren
+- Cashback, Vorschuss, Gutschrift → Einkommen
+- Mietzahlung, Überweisung für Wohnung → Wohnen
 - Wenn nicht eindeutig → Sonstiges
 
 Gib nur eine Kategorie pro Zeile aus, in exakt der Reihenfolge der Transaktionen.
