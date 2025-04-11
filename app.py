@@ -563,7 +563,15 @@ Antworte **nur mit einem der Begriffe**.
 
 import openai
 
-# 1. 💬 Chat-Button & Fenster-Styling
+# 0. Initialer Sichtbarkeitszustand
+if "chatbox_visible" not in st.session_state:
+    st.session_state.chatbox_visible = False
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+if "openai_key" not in st.session_state:
+    st.session_state.openai_key = ""
+
+# 1. 💬 Floating-Button (rechts unten fixiert)
 st.markdown("""
 <style>
 #chatbot-fab {
@@ -580,64 +588,59 @@ st.markdown("""
     cursor: pointer;
     z-index: 9999;
 }
-#chat-box {
-    position: fixed;
-    bottom: 100px;
-    right: 25px;
-    width: 350px;
-    max-height: 400px;
-    overflow-y: auto;
-    background-color: white;
-    border: 1px solid #ccc;
-    padding: 15px;
-    z-index: 9999;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    border-radius: 12px;
-}
 </style>
-
-<button id="chatbot-fab" onclick="document.getElementById('chatbox-container').style.display = (document.getElementById('chatbox-container').style.display === 'none') ? 'block' : 'none';">💬</button>
-<div id="chatbox-container" style="display: none;">
-    <div id="chat-box">
-        <h4>💬 Finanz-Assistent</h4>
-        <p>Stelle Fragen wie:<br>
-        • Wie viel habe ich im März für Reisen ausgegeben?<br>
-        • Was bedeutet Mapping-Check?</p>
-    </div>
-</div>
 """, unsafe_allow_html=True)
 
-# 2. 🧠 Interaktiver Chatverlauf (Streamlit)
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# Button erzeugen (sichtbar, aber mit Streamlit-Logik)
+if st.button("💬", key="chat_toggle", help="Finanz-Assistent ein-/ausblenden"):
+    st.session_state.chatbox_visible = not st.session_state.chatbox_visible
 
-with st.container():
-    if "openai_key" not in st.session_state:
-        st.session_state.openai_key = ""
+# 2. Sichtbares Chatfenster bei Aktivierung
+if st.session_state.chatbox_visible:
+    with st.container():
+        st.markdown("""
+        <style>
+        #chat-box {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 15px;
+            z-index: 9999;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 12px;
+        }
+        </style>
+        <div id="chat-box">
+        """, unsafe_allow_html=True)
 
-    with st.chat_message("assistant"):
-        st.markdown("Hi! Ich bin dein Finanz-Assistent. Frag mich alles zu deinen Ausgaben oder zur App.")
+        with st.chat_message("assistant"):
+            st.markdown("Hi! Ich bin dein Finanz-Assistent")
 
-    for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+        for msg in st.session_state.chat_history:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
 
-    user_msg = st.chat_input("Was möchtest du wissen?")
-    if user_msg:
-        st.chat_message("user").markdown(user_msg)
-        st.session_state.chat_history.append({"role": "user", "content": user_msg})
+        user_msg = st.chat_input("Was möchtest du wissen?")
+        if user_msg:
+            st.chat_message("user").markdown(user_msg)
+            st.session_state.chat_history.append({"role": "user", "content": user_msg})
 
-        if not st.session_state.openai_key:
-            st.warning("Bitte gib deinen OpenAI API-Key ein.")
-        else:
-            # 🧠 Kontext aufbauen
-            context = ""
-            if st.session_state.df is not None:
-                df = st.session_state.df
-                df_kurz = df[["datum", "beschreibung", "betrag", "GPT Kategorie"]].head(20).to_string()
-                context = f"Hier sind Beispiel-Transaktionen:\n{df_kurz}"
+            if not st.session_state.openai_key:
+                st.warning("Bitte gib deinen OpenAI API-Key ein.")
+            else:
+                # 🧠 Kontext aufbauen
+                context = ""
+                if st.session_state.df is not None:
+                    df = st.session_state.df
+                    df_kurz = df[["datum", "beschreibung", "betrag", "GPT Kategorie"]].head(20).to_string()
+                    context = f"Hier sind Beispiel-Transaktionen:\n{df_kurz}"
 
-            prompt = f"""
+                prompt = f"""
 Du bist ein persönlicher Finanzassistent. Antworte auf diese Nutzerfrage basierend auf den Beispieldaten:
 
 {context}
@@ -645,19 +648,22 @@ Du bist ein persönlicher Finanzassistent. Antworte auf diese Nutzerfrage basier
 Frage: {user_msg}
 """
 
-            try:
-                client = openai.OpenAI(api_key=st.session_state.openai_key)
-                response = client.chat.completions.create(
-                    model="gpt-4",
-                    messages=[
-                        {"role": "system", "content": "Du bist ein hilfreicher Finanzassistent."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.5
-                )
-                reply = response.choices[0].message.content.strip()
-            except Exception as e:
-                reply = f"Fehler: {e}"
+                try:
+                    client = openai.OpenAI(api_key=st.session_state.openai_key)
+                    response = client.chat.completions.create(
+                        model="gpt-4",
+                        messages=[
+                            {"role": "system", "content": "Du bist ein hilfreicher Finanzassistent."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.5
+                    )
+                    reply = response.choices[0].message.content.strip()
+                except Exception as e:
+                    reply = f"Fehler: {e}"
 
-            st.chat_message("assistant").markdown(reply)
-            st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                st.chat_message("assistant").markdown(reply)
+                st.session_state.chat_history.append({"role": "assistant", "content": reply})
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
