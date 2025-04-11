@@ -29,7 +29,7 @@ def get_user():
         return None
 
 # ----------------------------- DB -----------------------------
-def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: list[str], mapped_categories: list[str], gpt_score_text: str, model: str, gpt_recommendation: str = ""):
+def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: list[str], mapped_categories: list[str], gpt_score_text: str, model: str, zkp_hash: str, gpt_recommendation: str = ""):
     payload = {
         "user_id": user_id,
         "date_range": date_range,
@@ -38,6 +38,7 @@ def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: l
         "mapped_categories": mapped_categories,
         "gpt_score_text": gpt_score_text,
         "model": model,
+        "zkp_hash": zkp_hash,
         "gpt_recommendation": gpt_recommendation,
         "created_at": datetime.datetime.now().isoformat()
     }

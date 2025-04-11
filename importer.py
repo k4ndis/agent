@@ -1,14 +1,23 @@
 import pandas as pd
 import streamlit as st
 import csv
+import hashlib
+import json
+
 
 def parse_transaktion_datei(file):
-    # 🧪 Versuch 1: Standard-Erkennung (utf-8, sep=None)
+    import hashlib
+    import json
+
+    def erstelle_hash_von_dataframe(df) -> str:
+        daten = df.sort_index(axis=1).sort_values(by=df.columns[0]).to_dict(orient="records")
+        daten_json = json.dumps(daten, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(daten_json.encode("utf-8")).hexdigest()
+
     try:
         file.seek(0)
         df = pd.read_csv(file, sep=None, engine="python", dtype=str, encoding="utf-8")
     except UnicodeDecodeError:
-        # 🧪 Versuch 2: latin1 mit automatischer Trennzeichenerkennung
         file.seek(0)
         try:
             df = pd.read_csv(file, sep=None, engine="python", dtype=str, encoding="latin1")
@@ -21,17 +30,26 @@ def parse_transaktion_datei(file):
 
     df.columns = df.columns.str.strip().str.lower()
 
-    # ✅ Erkennung Sparkasse
     if "buchungstag" in df.columns and "verwendungszweck" in df.columns:
-        return konvertiere_sparkasse(df)
+        konvertiert = konvertiere_sparkasse(df)
+        if konvertiert is not None:
+            return {
+                "df": konvertiert,
+                "zk_hash": erstelle_hash_von_dataframe(konvertiert)
+            }
 
-    # ✅ Erkennung Spezialformat: Sparkasse Export latin1 mit ;
     if "umsatzart" in df.columns and "empf\u00e4nger/auftraggeber" in df.columns:
-        return konvertiere_mein_spezialformat(df)
+        konvertiert = konvertiere_mein_spezialformat(df)
+        if konvertiert is not None:
+            return {
+                "df": konvertiert,
+                "zk_hash": erstelle_hash_von_dataframe(konvertiert)
+            }
 
     st.warning("Unbekanntes Format – bitte prüfe Spaltennamen oder wähle manuell.")
     st.dataframe(df.head())
     return None
+
 
 def konvertiere_sparkasse(df):
     try:
@@ -75,3 +93,10 @@ def konvertiere_mein_spezialformat(df):
     except Exception as e:
         st.error(f"Fehler beim Verarbeiten deiner CSV-Datei: {e}")
         return None
+
+
+# ------------------- ZKP Hash Funktion -------------------
+def erstelle_hash_von_dataframe(df) -> str:
+    daten = df.sort_index(axis=1).sort_values(by=df.columns[0]).to_dict(orient="records")
+    daten_json = json.dumps(daten, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(daten_json.encode("utf-8")).hexdigest()

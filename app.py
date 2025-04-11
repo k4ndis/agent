@@ -152,8 +152,11 @@ if seite == "🔼 Transaktionen hochladen":
     st.header("Transaktionsdaten hochladen")
     uploaded_file = st.file_uploader("CSV-Datei oder anderes Format hochladen", type=["csv"])
     if uploaded_file:
-        df = parse_transaktion_datei(uploaded_file)
-        if df is not None:
+        parsed = parse_transaktion_datei(uploaded_file)
+        if parsed is not None:
+            df = parsed["df"]
+            zkp_hash = parsed["zk_hash"]
+
             # 🛡 Sicherstellen: Timestamp → datetime
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
 
@@ -168,8 +171,7 @@ if seite == "🔼 Transaktionen hochladen":
             # 💾 In Strings umwandeln (JSON-safe)
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
 
-            # 🔽 Jetzt safe speichern
-            from supabase_client import save_report
+            # 🔽 Jetzt safe speichern            
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
@@ -177,7 +179,8 @@ if seite == "🔼 Transaktionen hochladen":
                 gpt_categories=[],
                 mapped_categories=[],
                 gpt_score_text="",
-                model=GPT_MODE
+                model=GPT_MODE,
+                zkp_hash=zkp_hash
             )
             st.session_state.last_saved = datetime.datetime.now()
 
