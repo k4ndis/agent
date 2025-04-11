@@ -248,6 +248,9 @@ elif seite == "🤖 GPT-Kategorisierung":
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
 
+            from importer import erstelle_hash_von_dataframe
+            zkp_hash = erstelle_hash_von_dataframe(df)
+
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
@@ -255,7 +258,8 @@ elif seite == "🤖 GPT-Kategorisierung":
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text="",
-                model=GPT_MODE
+                model=GPT_MODE,
+                zkp_hash=zkp_hash
             )
             st.session_state.last_saved = datetime.datetime.now()
 
@@ -291,6 +295,9 @@ elif seite == "📊 Analyse & Score":
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
 
+            from importer import erstelle_hash_von_dataframe
+            zkp_hash = erstelle_hash_von_dataframe(df)
+
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
@@ -298,7 +305,8 @@ elif seite == "📊 Analyse & Score":
                 gpt_categories=df["GPT Kategorie"].tolist(),
                 mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ fix
-                model=GPT_MODE
+                model=GPT_MODE,
+                zkp_hash=zkp_hash
             )
 
             st.success("Bericht wurde automatisch gespeichert.")
