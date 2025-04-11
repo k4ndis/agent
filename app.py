@@ -339,6 +339,9 @@ elif seite == "📊 Analyse & Score":
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
 
+            from importer import erstelle_hash_von_dataframe
+            zkp_hash = erstelle_hash_von_dataframe(df)
+
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
@@ -347,7 +350,8 @@ elif seite == "📊 Analyse & Score":
                 mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ wichtig!
                 model=GPT_MODE,
-                gpt_recommendation=st.session_state.get("gpt_empfehlung", "")
+                gpt_recommendation=st.session_state.get("gpt_empfehlung", ""),
+                zkp_hash=zkp_hash
 )
 
             st.success("Empfehlung wurde automatisch gespeichert.")
