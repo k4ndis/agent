@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 
-st.set_page_config(page_title="Finanz-Dashboard", layout="wide")
+st.set_page_config(page_title="PrimAI", layout="wide")
 
 GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
 
@@ -110,7 +110,7 @@ if "last_saved" not in st.session_state:
 letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
 st.markdown(f'''
 <div class="top-header">
-    <h1>💸 KI-Finanz-Dashboard</h1>
+    <h1>💸 PrimAI Finance Agent</h1>
     <div>
         🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
         💾 Letzter Sync: <b>{letzte_sync}</b>
@@ -141,7 +141,7 @@ with st.sidebar.expander("🔑 OpenAI API Key eingeben"):
 st.sidebar.title("📂 Navigation")
 seiten = [
     "🔼 Transaktionen hochladen",
-    "🤖 GPT-Kategorisierung",
+    "🤖 KI-Kategorisierung",
     "📊 Analyse & Score",
     "📈 Visualisierung",
     "📂 Mein Verlauf",
@@ -203,8 +203,8 @@ if seite == "🔼 Transaktionen hochladen":
             st.error("Datei konnte nicht verarbeitet werden.")
 
 
-elif seite == "🤖 GPT-Kategorisierung":
-    st.header("GPT-Kategorisierung")
+elif seite == "🤖 KI-Kategorisierung":
+    st.header("KI-Kategorisierung")
     if st.session_state.df is None:
         st.warning("Bitte zuerst Transaktionsdaten hochladen.")
     else:
@@ -239,10 +239,10 @@ elif seite == "🤖 GPT-Kategorisierung":
 
 
             st.session_state.df = df
-            st.success("GPT-Kategorisierung abgeschlossen.")
+            st.success("KI-Kategorisierung abgeschlossen.")
             st.dataframe(df[["beschreibung", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
 
-            # ✅ automatisch speichern nach GPT-Kategorisierung
+            # ✅ automatisch speichern nach KI-Kategorisierung
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
             min_datum = df["datum"].min().strftime("%Y-%m-%d")
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
@@ -271,9 +271,9 @@ elif seite == "🤖 GPT-Kategorisierung":
 
 
 elif seite == "📊 Analyse & Score":
-    st.header("Mini-Schufa Analyse (GPT)")
+    st.header("PAA - PrimAI Agent Analyse")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
-        st.warning("Bitte zuerst eine GPT-Kategorisierung durchführen.")
+        st.warning("Bitte zuerst eine KI-Kategorisierung durchführen.")
     else:
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
@@ -362,7 +362,7 @@ elif seite == "📊 Analyse & Score":
 elif seite == "📈 Visualisierung":
     st.header("Visualisierung nach Monat und Kategorie")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
-        st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
+        st.warning("Bitte lade zuerst Daten hoch und führe die KI-Kategorisierung durch.")
     else:
         import plotly.express as px
 
@@ -501,10 +501,10 @@ elif seite == "📁 Bericht anzeigen":
 
 # ------------------- Mapping Check -------------------
 elif seite == "🧪 Mapping-Check":
-    st.header("🧪 GPT → Mapping Analyse")
+    st.header("PMA - PrimAI Mapping Analyse")
 
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
-        st.warning("Bitte lade zuerst Daten hoch und führe die GPT-Kategorisierung durch.")
+        st.warning("Bitte lade zuerst Daten hoch und führe die KI-Kategorisierung durch.")
     else:
         df = st.session_state.df.copy()
         
