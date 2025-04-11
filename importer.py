@@ -1,17 +1,29 @@
 import pandas as pd
 import streamlit as st
-import csv
 import hashlib
 import json
-
 
 def parse_transaktion_datei(file):
     import hashlib
     import json
 
     def erstelle_hash_von_dataframe(df) -> str:
+        # Funktion, um Timestamps zu konvertieren
+        def convert_timestamp(value):
+            if isinstance(value, pd.Timestamp):
+                return value.isoformat()  # Konvertiere Timestamp zu ISO-Format-String
+            return value
+
+        # Wende die Umwandlung auf das gesamte DataFrame an
+        df = df.applymap(convert_timestamp)
+
+        # Wandle das DataFrame in eine Liste von Dictionaries um
         daten = df.sort_index(axis=1).sort_values(by=df.columns[0]).to_dict(orient="records")
+        
+        # Erstelle einen JSON-String
         daten_json = json.dumps(daten, sort_keys=True, separators=(",", ":"))
+        
+        # Erstelle und gib den SHA256-Hash des JSON-Strings zurück
         return hashlib.sha256(daten_json.encode("utf-8")).hexdigest()
 
     try:
@@ -97,6 +109,20 @@ def konvertiere_mein_spezialformat(df):
 
 # ------------------- ZKP Hash Funktion -------------------
 def erstelle_hash_von_dataframe(df) -> str:
+    # Funktion, um Timestamps zu konvertieren
+    def convert_timestamp(value):
+        if isinstance(value, pd.Timestamp):
+            return value.isoformat()  # Konvertiere Timestamp zu ISO-Format-String
+        return value
+
+    # Wende die Umwandlung auf das gesamte DataFrame an
+    df = df.applymap(convert_timestamp)
+
+    # Wandeln DataFrame in eine Liste von Dictionaries um
     daten = df.sort_index(axis=1).sort_values(by=df.columns[0]).to_dict(orient="records")
+
+    # Erstelle einen JSON-String
     daten_json = json.dumps(daten, sort_keys=True, separators=(",", ":"))
+
+    # Erstelle und gib den SHA256-Hash des JSON-Strings zurück
     return hashlib.sha256(daten_json.encode("utf-8")).hexdigest()
