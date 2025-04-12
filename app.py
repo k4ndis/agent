@@ -144,6 +144,15 @@ st.markdown(f'''
 # ➕ Aktives Modell anzeigen
 st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
 
+# ZKP-Hash anzeigen, wenn verfügbar
+if "df" in st.session_state and st.session_state.df is not None:
+    from importer import erstelle_hash_von_dataframe
+    df = st.session_state.df
+    try:
+        zkp_hash = erstelle_hash_von_dataframe(df)
+        st.markdown(f"🧾 Aktueller ZKP-Hash: `{zkp_hash}`")
+    except Exception as e:
+        st.markdown(f"⚠️ Fehler beim Hashing: {e}")
 if st.sidebar.button("🚪 Logout"):
     sign_out()
     st.session_state.user = None
@@ -602,42 +611,24 @@ if "openai_key" not in st.session_state:
 if "gpt_agent_role" not in st.session_state:
     st.session_state.gpt_agent_role = "analyse"
 
-# 1. 💬 Floating-Button (sichtbar unten rechts)
+# 1. 💬 Floating-Button (sichtbar unten rechts, stabil mit Streamlit)
 st.markdown("""
 <style>
-#chatbot-fab {
+#floating-chat-btn {
     position: fixed;
     bottom: 25px;
     right: 25px;
-    background-color: #4b9cd3;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 55px;
-    height: 55px;
-    font-size: 26px;
-    cursor: pointer;
-    z-index: 9999;
+    z-index: 10000;
 }
 </style>
-<button id="chatbot-fab" onclick="document.dispatchEvent(new CustomEvent('toggleChatbox'))">💬</button>
-<script>
-document.addEventListener("toggleChatbox", function() {
-    const input = window.parent.document.querySelector('input[data-baseweb="input"]');
-    if (input) {
-        input.value = "__TOGGLE_CHAT__";
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-});
-</script>
 """, unsafe_allow_html=True)
 
-# 2. Umschalten per Chat-Input-Trigger
-if st.session_state.get("chat_input", "") == "__TOGGLE_CHAT__":
-    st.session_state.chatbox_visible = not st.session_state.chatbox_visible
-    st.session_state.chat_input = ""  # Reset trigger
+# Platzhalter für Floating-Button
+with st.container():
+    if st.button("💬", key="toggle_chat_button"):
+        st.session_state.chatbox_visible = not st.session_state.chatbox_visible
 
-# 3. Sichtbares Chatfenster bei Aktivierung
+# 2. Sichtbares Chatfenster bei Aktivierung
 if st.session_state.chatbox_visible:
     with st.container():
         st.markdown("""
@@ -672,14 +663,7 @@ if st.session_state.chatbox_visible:
 
         # Neue Nachricht eingeben
         user_msg = st.chat_input("Was möchtest du wissen?")
-
-        # Toggle-Aktion abfangen (kommt vom Button)
-        if user_msg == "__TOGGLE_CHAT__":
-            st.session_state.chatbox_visible = not st.session_state.chatbox_visible
-            st.stop()  # verhindert versehentliche Weiterverarbeitung
-
         if user_msg:
-
             st.chat_message("user").markdown(user_msg)
             st.session_state.chat_history.append({"role": "user", "content": user_msg})
 
@@ -715,8 +699,6 @@ if st.session_state.chatbox_visible:
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
         st.markdown("</div>", unsafe_allow_html=True)
-
-
 
 
 # ------------------- Agentenanalyse -------------------
