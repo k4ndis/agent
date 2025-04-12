@@ -672,7 +672,14 @@ if st.session_state.chatbox_visible:
 
         # Neue Nachricht eingeben
         user_msg = st.chat_input("Was möchtest du wissen?")
-        if user_msg and user_msg != "__TOGGLE_CHAT__":
+
+        # Toggle-Aktion abfangen (kommt vom Button)
+        if user_msg == "__TOGGLE_CHAT__":
+            st.session_state.chatbox_visible = not st.session_state.chatbox_visible
+            st.stop()  # verhindert versehentliche Weiterverarbeitung
+
+        if user_msg:
+
             st.chat_message("user").markdown(user_msg)
             st.session_state.chat_history.append({"role": "user", "content": user_msg})
 
@@ -713,22 +720,42 @@ if st.session_state.chatbox_visible:
 
 
 # ------------------- Agentenanalyse -------------------
-elif seite == "🤖 PrimaAI Agentenanalyse":
+elif seite == "🤖 PrimAI Agentenanalyse":
     from gpt_agent import call_gpt_agent
 
-    st.header("🤖 PrimAI Analyse- & Aktionsagent")
+    st.header(f"🤖 PrimAI Analyse mit dem {st.session_state.get('gpt_agent_role_name', 'Analyse-Agent')}")
 
-    frage = st.text_area("💬 Frage an den Agenten (z. B. 'Was bedeutet BFT 9.3?')")
+    st.subheader("📂 Optional: Lade eine Datei hoch mit Daten, die der Agent analysieren soll")
+    uploaded_file = st.file_uploader("Datei hochladen (z. B. .csv, .txt)", type=["csv", "txt"])
+
+    st.subheader("🧠 Deine Frage an den gewählten Agenten")
+    frage = st.text_area("💬 Beispiel: 'Was bedeutet BFT 9.3?' oder 'Welche Risiken siehst du?'")
 
     if st.session_state.openai_key and frage and st.button("Agent antworten lassen"):
-        with st.spinner("GPT denkt..."):
+        # Falls Datei vorhanden: Inhalt mitgeben
+        file_content = ""
+        if uploaded_file:
+            file_content = uploaded_file.read().decode("utf-8")
+            st.markdown("✅ Datei wurde erfolgreich gelesen und analysiert.")
+
+        prompt = f"""Du bist ein spezialisierter GPT-Agent ({st.session_state.gpt_agent_role_name}).
+        
+Hier sind hochgeladene Daten, falls vorhanden:
+{file_content}
+
+Frage des Nutzers:
+{frage}
+"""
+        with st.spinner("GPT analysiert..."):
             antwort = call_gpt_agent(
-                user_input=frage,
+                user_input=prompt,
                 agent_type=st.session_state.gpt_agent_role,
                 api_key=st.session_state.openai_key,
                 model=GPT_MODE
             )
-        st.markdown("### Antwort:")
+        st.markdown("### 🧾 GPT-Antwort:")
         st.markdown(antwort)
+
     elif not st.session_state.openai_key:
         st.warning("🔑 Bitte gib deinen OpenAI API-Key oben ein.")
+
