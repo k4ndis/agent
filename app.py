@@ -144,16 +144,16 @@ st.markdown(f'''
 # ➕ Aktives Modell anzeigen
 st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
 
-# ZKP-Hash anzeigen, wenn verfügbar
-if "df" in st.session_state and st.session_state.df is not None:
+# ZKP-Hash anzeigen, nur wenn ein Nutzer eingeloggt ist
+if st.session_state.get("user") and st.session_state.get("df") is not None:
     from importer import erstelle_hash_von_dataframe
-    df = st.session_state.df
     try:
-        zkp_hash = erstelle_hash_von_dataframe(df)
-        st.markdown("<span style='font-size: 16px;'>🧾 <b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
+        zkp_hash = erstelle_hash_von_dataframe(st.session_state.df)
+        st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
         st.code(zkp_hash, language="bash")
     except Exception as e:
         st.markdown(f"⚠️ Fehler beim Hashing: {e}")
+
 
 # Logout + Session-Reset
 if st.sidebar.button("🚪 Logout"):
