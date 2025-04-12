@@ -11,29 +11,29 @@ import datetime
 
 st.set_page_config(page_title="PrimAI", layout="wide")
 
-# AGENTEN-AUSWAHL (für GPT-Antwortverhalten)
-AGENTEN = {
-    "Analyse-Agent": "analyse",
-    "Optimierungs-Agent": "optimierung",
-    "Security-Agent": "security",
-    "Compliance-Agent": "compliance"
-}
+# AGENTEN-AUSWAHL (für GPT-Antwortverhalten) comment
+#AGENTEN = {
+#    "Analyse-Agent": "analyse",
+#    "Optimierungs-Agent": "optimierung",
+#    "Security-Agent": "security",
+#    "Compliance-Agent": "compliance"
+#}
 
-if "gpt_agent_role" not in st.session_state:
-    st.session_state.gpt_agent_role = "analyse"
+#if "gpt_agent_role" not in st.session_state:
+#    st.session_state.gpt_agent_role = "analyse"
 
-st.sidebar.selectbox(
-    "🧠 GPT-Agent wählen",
-    options=list(AGENTEN.keys()),
-    index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
-    key="gpt_agent_role_name"
-)
+#st.sidebar.selectbox(
+#    "🧠 GPT-Agent wählen",
+#    options=list(AGENTEN.keys()),
+#    index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
+#    key="gpt_agent_role_name"
+#)
 
 # Agent-Code speichern
-st.session_state.gpt_agent_role = AGENTEN[st.session_state.gpt_agent_role_name]
+#st.session_state.gpt_agent_role = AGENTEN[st.session_state.gpt_agent_role_name]
 
 
-GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
+#GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
 
 # ------------------- AUTHENTIFIZIERUNG -------------------
 if "user" not in st.session_state:
@@ -175,28 +175,95 @@ if st.sidebar.button("🚪 Logout"):
 if "openai_key" not in st.session_state:
     st.session_state.openai_key = ""
 
-with st.sidebar.expander("🔑 OpenAI API Key eingeben"):
-    st.session_state.openai_key = st.text_input("🔑 OpenAI API Key", type="password", label_visibility="collapsed")
+# with st.sidebar.expander("🔑 OpenAI API Key eingeben"):
+#    st.session_state.openai_key = st.text_input("🔑 OpenAI API Key", type="password", label_visibility="collapsed")
 
 
 # ------------------- SIDEBAR -------------------
-st.sidebar.title("📂 Navigation")
-seiten = [
-    "🔼 Transaktionen hochladen",
-    "🤖 KI-Kategorisierung",
-    "📊 Analyse & Score",
-    "📈 Visualisierung",
-    "📂 Mein Verlauf",
-    "📁 Bericht anzeigen",
-    "🧪 Mapping-Check",
-    "🤖 PrimAI Agentenanalyse",
+#st.sidebar.title("📂 Navigation")
+#seiten = [
+#    "🔼 Transaktionen hochladen",
+#    "🤖 KI-Kategorisierung",
+#    "📊 Analyse & Score",
+#    "📈 Visualisierung",
+#    "📂 Mein Verlauf",
+#    "📁 Bericht anzeigen",
+#    "🧪 Mapping-Check",
+#    "🤖 PrimAI Agentenanalyse",
 
-]
+#]
 
-if "seite" not in st.session_state:
-    st.session_state.seite = seiten[0]
+#if "seite" not in st.session_state:
+#    st.session_state.seite = seiten[0]
 
-seite = st.sidebar.radio("Wähle eine Ansicht:", seiten, index=seiten.index(st.session_state.seite))
+#seite = st.sidebar.radio("Wähle eine Ansicht:", seiten, index=seiten.index(st.session_state.seite))
+
+# ------------------- Sidebar -------------------
+with st.sidebar:
+
+    # 👤 User eingeloggt?
+    if st.session_state.get("user"):
+
+        # 🚪 Logout zuerst
+        if st.button("🚪 Logout"):
+            sign_out()
+            st.session_state.user = None
+            st.session_state.openai_key = ""
+            st.session_state.df = None
+            st.session_state.zkp_hash = None
+            st.rerun()
+
+        # 🔑 OpenAI API Key (sichtbar, kein Expander)
+        st.text_input("🔑 OpenAI API Key", type="password", key="openai_key")
+
+        # 🤖 GPT-Agent auswählen
+        AGENTEN = {
+            "Analyse-Agent": "analyse",
+            "Optimierungs-Agent": "optimierung",
+            "Security-Agent": "security",
+            "Compliance-Agent": "compliance"
+        }
+
+        if "gpt_agent_role" not in st.session_state:
+            st.session_state.gpt_agent_role = "analyse"
+
+        st.selectbox(
+            "🧠 GPT-Agent wählen",
+            options=list(AGENTEN.keys()),
+            index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
+            key="gpt_agent_role_name"
+        )
+        st.session_state.gpt_agent_role = AGENTEN[st.session_state.gpt_agent_role_name]
+
+        # 🧠 GPT-Modell auswählen
+        GPT_MODE = st.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
+        st.session_state.gpt_model = GPT_MODE
+
+        # 📁 Navigation
+        st.markdown("### 📂 Navigation")
+        st.radio("Wähle eine Ansicht:", [
+            "🔼 Transaktionen hochladen",
+            "🤖 KI-Kategorisierung",
+            "📊 Analyse & Score",
+            "📈 Visualisierung",
+            "📂 Mein Verlauf",
+            "📁 Bericht anzeigen",
+            "🧪 Mapping-Check",
+            "🤖 PrimAI Agentenanalyse"
+        ], key="seite")
+
+    else:
+        # 👤 Login/Registrierung
+        st.markdown("## 🔐 Anmeldung")
+        st.radio("Aktion wählen", ["Einloggen", "Registrieren"], key="auth_mode")
+        st.text_input("E-Mail", key="email")
+        st.text_input("Passwort", type="password", key="password")
+
+        if st.button("Einloggen"):
+            login(st.session_state.email, st.session_state.password)
+
+        if st.button("Registrieren"):
+            register(st.session_state.email, st.session_state.password)
 
 
 # ------------------- HAUPT-INHALTE -------------------
