@@ -144,22 +144,19 @@ st.markdown(f'''
 # ➕ Aktives Modell anzeigen
 st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
 
-# ZKP-Hash anzeigen, nur wenn ein Nutzer eingeloggt ist
-if st.session_state.get("user") and st.session_state.get("df") is not None:
-    from importer import erstelle_hash_von_dataframe
+# ZKP-Hash anzeigen, wenn vorhanden (und ein Nutzer eingeloggt ist)
+if st.session_state.get("user") and st.session_state.get("zkp_hash"):
     try:
-        zkp_hash = erstelle_hash_von_dataframe(st.session_state.df)
+        zkp_hash = st.session_state.zkp_hash  # ✅ Verwende gespeicherten Hash
         st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
         st.code(zkp_hash, language="bash")
-        from supabase_client import is_hash_verified
 
-        # ✅ Verifikation anzeigen
-        user_id = st.session_state.user.id if st.session_state.get("user") else None
-        if user_id:
-            if is_hash_verified(user_id, zkp_hash):
-                st.success("✅ Verifiziert: Der ZKP-Hash wurde bereits in Supabase gespeichert.")
-            else:
-                st.warning("❌ Nicht verifiziert: Dieser Hash ist noch nicht in Supabase registriert.")
+        from supabase_client import is_hash_verified
+        user_id = st.session_state.user.id
+        if is_hash_verified(user_id, zkp_hash):
+            st.success("✅ Verifiziert: Der ZKP-Hash wurde bereits in Supabase gespeichert.")
+        else:
+            st.warning("❌ Nicht verifiziert: Dieser Hash ist noch nicht in Supabase registriert.")
 
     except Exception as e:
         st.markdown(f"⚠️ Fehler beim Hashing: {e}")
@@ -217,7 +214,21 @@ if seite == "🔼 Transaktionen hochladen":
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
 
             st.session_state.df = df
+            st.session_state.zkp_hash = zkp_hash  # ✅ wichtig für spätere Anzeige
             st.success("Datei wurde erfolgreich geladen und erkannt.")
+            from supabase_client import is_hash_verified
+
+            # ZKP-Hash direkt anzeigen
+            st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
+            st.code(zkp_hash, language="bash")
+
+            # Direkt verifizieren
+            user_id = st.session_state.user.id
+            if is_hash_verified(user_id, zkp_hash):
+                st.success("✅ Verifiziert: Der ZKP-Hash wurde bereits in Supabase gespeichert.")
+            else:
+                st.warning("❌ Nicht verifiziert: Dieser Hash ist noch nicht in Supabase registriert.")
+
             st.dataframe(df)
 
             # ⏱ min/max
@@ -471,6 +482,7 @@ elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
         st.info("Noch keine gespeicherten Berichte vorhanden.")
 
 
+# ------------------- Mein Verlauf -------------------
 elif seite == "📂 Mein Verlauf":
     st.header("📂 Mein persönlicher Analyse-Verlauf")
     from supabase_client import load_reports
@@ -494,11 +506,11 @@ elif seite == "📂 Mein Verlauf":
 
                 if st.button(f"🔁 Bericht laden", key=f"bericht_{idx}"):
                     st.session_state.selected_report = eintrag
+                    st.session_state.zkp_hash = eintrag.get("zkp_hash")
                     st.session_state.seite = "📁 Bericht anzeigen"
                     st.rerun()
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
-
 
 
 # ------------------- Bericht anzeigen -------------------
