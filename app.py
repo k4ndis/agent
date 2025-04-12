@@ -235,7 +235,7 @@ elif seite == "🤖 KI-Kategorisierung":
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
         if api_key:
             alle_beschreibungen = df["beschreibung"].tolist()
-            with st.spinner(f"Starte GPT-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
+            with st.spinner(f"Starte PrimAI-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
                 roh_kategorien, gemappt = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
 
             df["GPT Rohkategorie"] = roh_kategorien
@@ -587,6 +587,7 @@ Antworte **nur mit einem der Begriffe**.
 import openai
 import sys
 import os
+import streamlit as st
 sys.path.append(os.path.abspath("."))
 
 from agent_router import get_prompt  # <- Wichtig: Import für Agenten-Prompt
@@ -599,9 +600,9 @@ if "chat_history" not in st.session_state:
 if "openai_key" not in st.session_state:
     st.session_state.openai_key = ""
 if "gpt_agent_role" not in st.session_state:
-    st.session_state.gpt_agent_role = "analyse"  # fallback falls Dropdown nicht gesetzt
+    st.session_state.gpt_agent_role = "analyse"
 
-# 1. 💬 Floating Button unten rechts
+# 1. 💬 Floating-Button (sichtbar unten rechts)
 st.markdown("""
 <style>
 #chatbot-fab {
@@ -619,13 +620,24 @@ st.markdown("""
     z-index: 9999;
 }
 </style>
+<button id="chatbot-fab" onclick="document.dispatchEvent(new CustomEvent('toggleChatbox'))">💬</button>
+<script>
+document.addEventListener("toggleChatbox", function() {
+    const input = window.parent.document.querySelector('input[data-baseweb="input"]');
+    if (input) {
+        input.value = "__TOGGLE_CHAT__";
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+});
+</script>
 """, unsafe_allow_html=True)
 
-# Sichtbarkeit umschalten per Button
-if st.button("💬", key="chat_toggle", help="PrimAI Agent ein-/ausblenden"):
+# 2. Umschalten per Chat-Input-Trigger
+if st.session_state.get("chat_input", "") == "__TOGGLE_CHAT__":
     st.session_state.chatbox_visible = not st.session_state.chatbox_visible
+    st.session_state.chat_input = ""  # Reset trigger
 
-# 2. Sichtbarer Chat-Bereich bei aktivierter Box
+# 3. Sichtbares Chatfenster bei Aktivierung
 if st.session_state.chatbox_visible:
     with st.container():
         st.markdown("""
@@ -653,28 +665,28 @@ if st.session_state.chatbox_visible:
             agent_name = st.session_state.get("gpt_agent_role_name", "Analyse-Agent")
             st.markdown(f"👋 Hallo! Ich bin dein PrimAI {agent_name}.")
 
-        # Bisherige Chat-Historie anzeigen
+        # Historie anzeigen
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-        # Eingabefeld für neue Frage
+        # Neue Nachricht eingeben
         user_msg = st.chat_input("Was möchtest du wissen?")
-        if user_msg:
+        if user_msg and user_msg != "__TOGGLE_CHAT__":
             st.chat_message("user").markdown(user_msg)
             st.session_state.chat_history.append({"role": "user", "content": user_msg})
 
             if not st.session_state.openai_key:
-                st.warning("Bitte gib deinen OpenAI API-Key ein.")
+                st.warning("🔑 Bitte gib deinen OpenAI API-Key ein.")
             else:
-                # Kontext aufbauen (z. B. aus Transaktionsdaten)
+                # Kontext aufbauen
                 context = ""
                 if st.session_state.get("df") is not None:
                     df = st.session_state.df
                     df_kurz = df[["datum", "beschreibung", "betrag", "GPT Kategorie"]].head(20).to_string()
                     context = f"\nBeispiel-Transaktionen:\n{df_kurz}\n"
 
-                # Agent-Prompt laden
+                # Agentenprompt laden
                 prompt_base = get_prompt(st.session_state.gpt_agent_role)
                 full_prompt = f"{prompt_base.strip()}\n\n{context}\nFrage: {user_msg}"
 
@@ -696,6 +708,7 @@ if st.session_state.chatbox_visible:
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 
