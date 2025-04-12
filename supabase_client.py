@@ -53,3 +53,17 @@ def load_all_reports():
 def resend_confirmation_email(email):
     return supabase.auth.resend(email=email)
 
+
+# ----------------------------- Hash Verifizierung -----------------------------
+def is_hash_verified(user_id: str, zkp_hash: str) -> bool:
+    """
+    Prüft, ob der gegebene Hash bereits für diesen Nutzer in Supabase gespeichert ist.
+    """
+    try:
+        result = supabase.table("reports").select("zkp_hash").eq("user_id", user_id).execute()
+        if result.data:
+            hashes = [entry["zkp_hash"] for entry in result.data if entry["zkp_hash"]]
+            return zkp_hash in hashes
+    except Exception as e:
+        print(f"Fehler bei der ZKP-Verifikation: {e}")
+    return False

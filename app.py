@@ -151,6 +151,16 @@ if st.session_state.get("user") and st.session_state.get("df") is not None:
         zkp_hash = erstelle_hash_von_dataframe(st.session_state.df)
         st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
         st.code(zkp_hash, language="bash")
+        from supabase_client import is_hash_verified
+
+        # ✅ Verifikation anzeigen
+        user_id = st.session_state.user.id if st.session_state.get("user") else None
+        if user_id:
+            if is_hash_verified(user_id, zkp_hash):
+                st.success("✅ Verifiziert: Der ZKP-Hash wurde bereits in Supabase gespeichert.")
+            else:
+                st.warning("❌ Nicht verifiziert: Dieser Hash ist noch nicht in Supabase registriert.")
+
     except Exception as e:
         st.markdown(f"⚠️ Fehler beim Hashing: {e}")
 
