@@ -268,7 +268,7 @@ with st.sidebar:
 
 # ------------------- HAUPT-INHALTE -------------------
 
-if seite == "🔼 Transaktionen hochladen":
+if st.session_state.seite == "🔼 Transaktionen hochladen":
     st.header("Transaktionsdaten hochladen")
     uploaded_file = st.file_uploader("CSV-Datei oder anderes Format hochladen", type=["csv"])
     if uploaded_file:
@@ -327,7 +327,7 @@ if seite == "🔼 Transaktionen hochladen":
             st.error("Datei konnte nicht verarbeitet werden.")
 
 
-elif seite == "🤖 KI-Kategorisierung":
+elif st.session_state.seite == "🤖 KI-Kategorisierung":
     st.header("KI-Kategorisierung")
     if st.session_state.df is None:
         st.warning("Bitte zuerst Transaktionsdaten hochladen.")
@@ -394,7 +394,7 @@ elif seite == "🤖 KI-Kategorisierung":
                 st.warning("🔴 Noch nicht gespeichert.")
 
 
-elif seite == "📊 Analyse & Score":
+elif st.session_state.seite == "📊 Analyse & Score":
     st.header("PAA - PrimAI Agent Analyse")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte zuerst eine KI-Kategorisierung durchführen.")
@@ -483,7 +483,7 @@ elif seite == "📊 Analyse & Score":
 
 
 # ------------------- Visualisierung -------------------
-elif seite == "📈 Visualisierung":
+elif st.session_state.seite == "📈 Visualisierung":
     st.header("Visualisierung nach Monat und Kategorie")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte lade zuerst Daten hoch und führe die KI-Kategorisierung durch.")
@@ -533,7 +533,7 @@ elif seite == "📈 Visualisierung":
 
 
 # ------------------- Admin -------------------
-elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
+elif st.session_state.seite == "🧑‍💼 Admin (alle Nutzerberichte)":
     st.header("🧑‍💼 Admin-Übersicht: Alle gespeicherten Berichte")
     res = load_all_reports()
     if res.data:
@@ -550,7 +550,7 @@ elif seite == "🧑‍💼 Admin (alle Nutzerberichte)":
 
 
 # ------------------- Mein Verlauf -------------------
-elif seite == "📂 Mein Verlauf":
+elif st.session_state.seite == "📂 Mein Verlauf":
     st.header("📂 Mein persönlicher Analyse-Verlauf")
     from supabase_client import load_reports
 
@@ -581,7 +581,7 @@ elif seite == "📂 Mein Verlauf":
 
 
 # ------------------- Bericht anzeigen -------------------
-elif seite == "📁 Bericht anzeigen":
+elif st.session_state.seite == "📁 Bericht anzeigen":
     st.header("📁 Bericht anzeigen")
 
     if "selected_report" not in st.session_state:
@@ -625,7 +625,7 @@ elif seite == "📁 Bericht anzeigen":
 
 
 # ------------------- Mapping Check -------------------
-elif seite == "🧪 Mapping-Check":
+elif st.session_state.seite == "🧪 Mapping-Check":
     st.header("PMA - PrimAI Mapping Analyse")
 
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
@@ -795,7 +795,7 @@ if st.session_state.chatbox_visible:
 
 
 # ------------------- Agentenanalyse -------------------
-elif seite == "🤖 PrimAI Agentenanalyse":
+elif st.session_state.seite == "🤖 PrimAI Agentenanalyse":
     from gpt_agent import call_gpt_agent
 
     st.header(f"🤖 PrimAI Analyse mit dem {st.session_state.get('gpt_agent_role_name', 'Analyse-Agent')}")
