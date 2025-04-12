@@ -301,7 +301,7 @@ elif seite == "📊 Analyse & Score":
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
         if api_key and st.button("Finanzverhalten analysieren"):
-            with st.spinner("GPT bewertet dein Finanzverhalten..."):
+            with st.spinner("Prima AI bewertet dein Finanzverhalten..."):
                 auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
                 st.session_state["gpt_score"] = auswertung
             st.success("Analyse abgeschlossen")
@@ -345,7 +345,7 @@ elif seite == "📊 Analyse & Score":
         # ✅ GPT Empfehlungen (sichtbar unabhängig von Score-Auswertung)
         if api_key and st.button("Empfehlungen anzeigen"):
             from gpt_kategorisierung import gpt_empfehlungen
-            with st.spinner("GPT analysiert deine Daten für Empfehlungen..."):
+            with st.spinner("PrimAI analysiert deine Daten für Empfehlungen..."):
                 empfehlung = gpt_empfehlungen(df, api_key, model=GPT_MODE)
                 st.session_state["gpt_empfehlung"] = empfehlung
             st.success("Empfehlung wurde erstellt.")
