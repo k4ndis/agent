@@ -585,7 +585,11 @@ Antworte **nur mit einem der Begriffe**.
 # ------------------- Floating Chat Assistent (PrimAI Agent basiert) -------------------
 
 import openai
-from utils.agent_router import get_prompt  # <- Wichtig: Import für Agenten-Prompt
+import sys
+import os
+sys.path.append(os.path.abspath("."))
+
+from agent_router import get_prompt  # <- Wichtig: Import für Agenten-Prompt
 
 # 0. Sichtbarkeitszustände & Session-Vars initialisieren
 if "chatbox_visible" not in st.session_state:
