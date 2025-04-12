@@ -150,13 +150,17 @@ if "df" in st.session_state and st.session_state.df is not None:
     df = st.session_state.df
     try:
         zkp_hash = erstelle_hash_von_dataframe(df)
-        st.markdown(f"🧾 Aktueller ZKP-Hash: `{zkp_hash}`")
+        st.markdown("<span style='font-size: 16px;'>🧾 <b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
+        st.code(zkp_hash, language="bash")
     except Exception as e:
         st.markdown(f"⚠️ Fehler beim Hashing: {e}")
+
+# Logout + Session-Reset
 if st.sidebar.button("🚪 Logout"):
     sign_out()
     st.session_state.user = None
-    st.session_state.openai_key = ""  # 🔐 Key mit löschen
+    st.session_state.openai_key = ""
+    st.session_state.df = None  # ❌ Reset Hash
     st.rerun()
 
 
