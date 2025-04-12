@@ -142,7 +142,7 @@ st.markdown(f'''
 
 
 # ➕ Aktives Modell anzeigen
-st.markdown(f"🔍 Aktives GPT-Modell: **{GPT_MODE}**")
+st.markdown(f"🔍 Aktives GPT-Modell: **{st.session_state.get('gpt_model', '–')}**")
 
 # ZKP-Hash anzeigen, wenn vorhanden (und ein Nutzer eingeloggt ist)
 if st.session_state.get("user") and st.session_state.get("zkp_hash"):
