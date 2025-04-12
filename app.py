@@ -163,12 +163,12 @@ if st.session_state.get("user") and st.session_state.get("zkp_hash"):
 
 
 # Logout + Session-Reset
-if st.sidebar.button("🚪 Logout"):
-    sign_out()
-    st.session_state.user = None
-    st.session_state.openai_key = ""
-    st.session_state.df = None  # ❌ Reset Hash
-    st.rerun()
+#if st.sidebar.button("🚪 Logout"):
+#    sign_out()
+#    st.session_state.user = None
+#    st.session_state.openai_key = ""
+#    st.session_state.df = None  # ❌ Reset Hash
+#    st.rerun()
 
 
 # 🧠 API-Key einmalig setzen (gilt für Assistent + Kategorisierung + Score)
