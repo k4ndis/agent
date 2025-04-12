@@ -11,6 +11,28 @@ import datetime
 
 st.set_page_config(page_title="PrimAI", layout="wide")
 
+# AGENTEN-AUSWAHL (für GPT-Antwortverhalten)
+AGENTEN = {
+    "Analyse-Agent": "analyse",
+    "Optimierungs-Agent": "optimierung",
+    "Security-Agent": "security",
+    "Compliance-Agent": "compliance"
+}
+
+if "gpt_agent_role" not in st.session_state:
+    st.session_state.gpt_agent_role = "analyse"
+
+st.sidebar.selectbox(
+    "🧠 GPT-Agent wählen",
+    options=list(AGENTEN.keys()),
+    index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
+    key="gpt_agent_role_name"
+)
+
+# Agent-Code speichern
+st.session_state.gpt_agent_role = AGENTEN[st.session_state.gpt_agent_role_name]
+
+
 GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
 
 # ------------------- AUTHENTIFIZIERUNG -------------------
@@ -147,6 +169,7 @@ seiten = [
     "📂 Mein Verlauf",
     "📁 Bericht anzeigen",
     "🧪 Mapping-Check",
+    "🤖 PrimAI Agentenanalyse",
 
 ]
 
@@ -559,19 +582,22 @@ Antworte **nur mit einem der Begriffe**.
             st.dataframe(fehlende[["GPT Rohkategorie", "GPT-Vorschlag"]])
 
 
-# ------------------- Floating Chat Assistent -------------------
+# ------------------- Floating Chat Assistent (PrimAI Agent basiert) -------------------
 
 import openai
+from utils.agent_router import get_prompt  # <- Wichtig: Import für Agenten-Prompt
 
-# 0. Initialer Sichtbarkeitszustand
+# 0. Sichtbarkeitszustände & Session-Vars initialisieren
 if "chatbox_visible" not in st.session_state:
     st.session_state.chatbox_visible = False
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "openai_key" not in st.session_state:
     st.session_state.openai_key = ""
+if "gpt_agent_role" not in st.session_state:
+    st.session_state.gpt_agent_role = "analyse"  # fallback falls Dropdown nicht gesetzt
 
-# 1. 💬 Floating-Button (rechts unten fixiert)
+# 1. 💬 Floating Button unten rechts
 st.markdown("""
 <style>
 #chatbot-fab {
@@ -591,11 +617,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Button erzeugen (sichtbar, aber mit Streamlit-Logik)
-if st.button("💬", key="chat_toggle", help="Finanz-Assistent ein-/ausblenden"):
+# Sichtbarkeit umschalten per Button
+if st.button("💬", key="chat_toggle", help="PrimAI Agent ein-/ausblenden"):
     st.session_state.chatbox_visible = not st.session_state.chatbox_visible
 
-# 2. Sichtbares Chatfenster bei Aktivierung
+# 2. Sichtbarer Chat-Bereich bei aktivierter Box
 if st.session_state.chatbox_visible:
     with st.container():
         st.markdown("""
@@ -605,7 +631,7 @@ if st.session_state.chatbox_visible:
             bottom: 100px;
             right: 25px;
             width: 350px;
-            max-height: 400px;
+            max-height: 420px;
             overflow-y: auto;
             background-color: white;
             border: 1px solid #ccc;
@@ -618,13 +644,17 @@ if st.session_state.chatbox_visible:
         <div id="chat-box">
         """, unsafe_allow_html=True)
 
+        # Begrüßung
         with st.chat_message("assistant"):
-            st.markdown("Hi! Ich bin dein Finanz-Assistent")
+            agent_name = st.session_state.get("gpt_agent_role_name", "Analyse-Agent")
+            st.markdown(f"👋 Hallo! Ich bin dein PrimAI {agent_name}.")
 
+        # Bisherige Chat-Historie anzeigen
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
+        # Eingabefeld für neue Frage
         user_msg = st.chat_input("Was möchtest du wissen?")
         if user_msg:
             st.chat_message("user").markdown(user_msg)
@@ -633,30 +663,26 @@ if st.session_state.chatbox_visible:
             if not st.session_state.openai_key:
                 st.warning("Bitte gib deinen OpenAI API-Key ein.")
             else:
-                # 🧠 Kontext aufbauen
+                # Kontext aufbauen (z. B. aus Transaktionsdaten)
                 context = ""
-                if st.session_state.df is not None:
+                if st.session_state.get("df") is not None:
                     df = st.session_state.df
                     df_kurz = df[["datum", "beschreibung", "betrag", "GPT Kategorie"]].head(20).to_string()
-                    context = f"Hier sind Beispiel-Transaktionen:\n{df_kurz}"
+                    context = f"\nBeispiel-Transaktionen:\n{df_kurz}\n"
 
-                prompt = f"""
-Du bist ein persönlicher Finanzassistent. Antworte auf diese Nutzerfrage basierend auf den Beispieldaten:
-
-{context}
-
-Frage: {user_msg}
-"""
+                # Agent-Prompt laden
+                prompt_base = get_prompt(st.session_state.gpt_agent_role)
+                full_prompt = f"{prompt_base.strip()}\n\n{context}\nFrage: {user_msg}"
 
                 try:
                     client = openai.OpenAI(api_key=st.session_state.openai_key)
                     response = client.chat.completions.create(
                         model="gpt-4",
                         messages=[
-                            {"role": "system", "content": "Du bist ein hilfreicher Finanzassistent."},
-                            {"role": "user", "content": prompt}
+                            {"role": "system", "content": prompt_base},
+                            {"role": "user", "content": full_prompt}
                         ],
-                        temperature=0.5
+                        temperature=0.4
                     )
                     reply = response.choices[0].message.content.strip()
                 except Exception as e:
@@ -667,3 +693,25 @@ Frage: {user_msg}
 
         st.markdown("</div>", unsafe_allow_html=True)
 
+
+
+# ------------------- Agentenanalyse -------------------
+elif seite == "🤖 PrimaAI Agentenanalyse":
+    from gpt_agent import call_gpt_agent
+
+    st.header("🤖 PrimAI Analyse- & Aktionsagent")
+
+    frage = st.text_area("💬 Frage an den Agenten (z. B. 'Was bedeutet BFT 9.3?')")
+
+    if st.session_state.openai_key and frage and st.button("Agent antworten lassen"):
+        with st.spinner("GPT denkt..."):
+            antwort = call_gpt_agent(
+                user_input=frage,
+                agent_type=st.session_state.gpt_agent_role,
+                api_key=st.session_state.openai_key,
+                model=GPT_MODE
+            )
+        st.markdown("### Antwort:")
+        st.markdown(antwort)
+    elif not st.session_state.openai_key:
+        st.warning("🔑 Bitte gib deinen OpenAI API-Key oben ein.")
