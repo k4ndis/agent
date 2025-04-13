@@ -283,6 +283,9 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
             st.session_state.df = df
             st.session_state.zkp_hash = zkp_hash  # ✅ wichtig für spätere Anzeige
             st.success("Datei wurde erfolgreich geladen und erkannt.")
+            # 📄 input.json für Noir generieren
+            from importer import exportiere_input_json
+            exportiere_input_json(df)
             from supabase_client import is_hash_verified
 
             # ZKP-Hash direkt anzeigen
