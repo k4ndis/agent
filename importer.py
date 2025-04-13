@@ -161,3 +161,6 @@ def exportiere_input_json(df, dateiname="input.json", max_length=512):
         json.dump(input_data, f, indent=2)
         print(f"✅ Noir-kompatibles input.json gespeichert ({len(secret_bytes)} Bytes)")
 
+    return hash_array, secret_bytes
+
+

@@ -285,8 +285,20 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
             st.success("Datei wurde erfolgreich geladen und erkannt.")
             # 📄 input.json für Noir generieren
             from importer import exportiere_input_json
-            exportiere_input_json(df)
+            hash_array, secret_bytes = exportiere_input_json(df)
             from supabase_client import is_hash_verified
+
+            import json
+
+            st.download_button(
+                label="⬇️ input.json herunterladen",
+                data=json.dumps({
+                    "hash": hash_array,
+                    "secret": secret_bytes
+                }, indent=2),
+                file_name="input.json",
+                mime="application/json"
+            )
 
             # ZKP-Hash direkt anzeigen
             st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
