@@ -373,7 +373,7 @@ elif st.session_state.seite == "🤖 Mapping":
 
             st.session_state.df = df
             st.success("Mapping abgeschlossen.")
-            st.dataframe(df[["gpt_input", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
+            st.dataframe(df[["datum", "betrag", "gpt_input", "GPT Kategorie"]])
 
             # ✅ automatisch speichern nach Mapping
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
@@ -566,7 +566,7 @@ elif st.session_state.seite == "🧑‍💼 Admin (alle Nutzerberichte)":
 
 # ------------------- History -------------------
 elif st.session_state.seite == "📂 History":
-    st.header("📂 Mein persönlicher Analyse-Verlauf")
+    st.header("📂 Reports")
     from supabase_client import load_reports
 
     res = load_reports(st.session_state.user.id)
@@ -621,11 +621,11 @@ elif st.session_state.seite == "📁 Report":
         st.session_state.gpt_score = eintrag["gpt_score_text"]
 
         # Inhalt anzeigen
-        st.subheader("📊 Transaktionen mit GPT-Kategorien")
+        st.subheader("📊 Transaktionen")
         st.dataframe(df)
 
         if st.session_state.gpt_score:
-            st.subheader("🧠 GPT Score-Analyse")
+            st.subheader("🧠 Rating-Analyse")
             st.markdown(st.session_state.gpt_score)
         else:
             st.info("Für diesen Bericht wurde noch keine Analyse durchgeführt.")
@@ -642,27 +642,33 @@ elif st.session_state.seite == "📁 Report":
 
 # ------------------- Mapping Check -------------------
 elif st.session_state.seite == "🧪 Mapping-Check":
-    st.header("PMA - PrimAI Mapping Analyse")
+    st.header("Mapping Check")
 
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte lade zuerst Daten hoch und führe Mapping aus.")
     else:
         df = st.session_state.df.copy()
-        
+
         from kategorie_mapping import map_to_standardkategorie
-        df["Gemappte Kategorie"] = df["GPT Rohkategorie"].apply(map_to_standardkategorie)
+
+        # ✅ Nur noch mit GPT Kategorie mappen
+        df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
         df["Status"] = df.apply(
             lambda row: "✅" if row["Gemappte Kategorie"] != "Sonstiges" else "⚠️ Nicht gemappt",
             axis=1
         )
 
         st.success(f"{len(df)} Transaktionen geprüft.")
-        st.dataframe(df[["beschreibung", "GPT Rohkategorie", "GPT Kategorie", "Gemappte Kategorie", "Status"]])
 
+        # 🧾 Übersichtstabelle mit angepassten Spalten
+        st.dataframe(df[["beschreibung", "gpt_input", "GPT Kategorie", "Gemappte Kategorie", "Status"]])
+
+        # 📊 Statistik
         anzahl_nicht_gemappt = df[df["Gemappte Kategorie"] == "Sonstiges"].shape[0]
         gesamt = df.shape[0]
         st.markdown(f"🔎 **Nicht gemappt:** {anzahl_nicht_gemappt} von {gesamt} → **{round(anzahl_nicht_gemappt / gesamt * 100, 2)} %**")
 
+        # 💡 GPT-Vorschläge für nicht gemappte Kategorien
         api_key = st.text_input("🔑 OpenAI API Key (für Vorschläge)", type="password")
         if api_key and anzahl_nicht_gemappt > 0:
             from openai import OpenAI
@@ -696,8 +702,8 @@ Antworte **nur mit einem der Begriffe**.
 
             st.subheader("💡 GPT-Vorschläge für fehlende Mappings")
             fehlende = df[df["Gemappte Kategorie"] == "Sonstiges"].copy()
-            fehlende["GPT-Vorschlag"] = fehlende["GPT Rohkategorie"].apply(gpt_mapping_vorschlag)
-            st.dataframe(fehlende[["GPT Rohkategorie", "GPT-Vorschlag"]])
+            fehlende["GPT-Vorschlag"] = fehlende["GPT Kategorie"].apply(gpt_mapping_vorschlag)
+            st.dataframe(fehlende[["GPT Kategorie", "GPT-Vorschlag"]])
 
 
 # ------------------- Floating Chat Assistent (PrimAI Agent basiert) -------------------
