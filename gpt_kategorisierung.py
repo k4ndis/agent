@@ -3,7 +3,7 @@ from openai import OpenAI
 def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     client = OpenAI(api_key=api_key)
 
-    beschreibungen = df["beschreibung"].tolist()
+    beschreibungen = df["gpt_input"].tolist()
     kategorien = df.get("GPT Kategorie", [])
 
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
@@ -63,7 +63,7 @@ Erkläre in 2–3 kurzen Sätzen, wie du zu dieser Einschätzung kommst.
 def gpt_empfehlungen(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     client = OpenAI(api_key=api_key)
 
-    beschreibungen = df["beschreibung"].tolist()
+    beschreibungen = df["gpt_input"].tolist()
     kategorien = df.get("GPT Kategorie", [])
 
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])

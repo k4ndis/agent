@@ -350,7 +350,7 @@ elif st.session_state.seite == "🤖 KI-Kategorisierung":
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
         if api_key:
-            alle_beschreibungen = df["beschreibung"].tolist()
+            alle_beschreibungen = df["gpt_input"].tolist()
             with st.spinner(f"Starte PrimAI-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
                 roh_kategorien, gemappt = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
 
@@ -379,7 +379,7 @@ elif st.session_state.seite == "🤖 KI-Kategorisierung":
 
             st.session_state.df = df
             st.success("KI-Kategorisierung abgeschlossen.")
-            st.dataframe(df[["beschreibung", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
+            st.dataframe(df[["gpt_input", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
 
             # ✅ automatisch speichern nach KI-Kategorisierung
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")

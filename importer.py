@@ -72,18 +72,32 @@ def konvertiere_sparkasse(df):
             .str.replace(",", ".", regex=False)
             .astype(float)
         )
+
         df["beschreibung"] = (
             df["buchungstext"].fillna("") + " — " +
-            df["verwendungszweck"].fillna("").str.slice(0, 50)
+            df["verwendungszweck"].fillna("")
         )
 
-        return df[["buchungstag", "beschreibung", "betrag"]].rename(columns={
+        # Beteiligter (optional)
+        df["beteiligter"] = df["begünstigter/zahlungspflichtiger"].fillna("Unbekannt")
+
+        # 🧠 GPT Input mit Zusatz
+        df["gpt_input"] = (
+            "[" + df["buchungstext"].fillna("") + "] " +
+            df["buchungstag"].dt.strftime("%Y-%m-%d") + " | " +
+            df["betrag"].round(2).astype(str) + " EUR | " +
+            df["verwendungszweck"].fillna("").str.strip() + " | " +
+            "Beteiligter: " + df["beteiligter"]
+        )
+
+        return df[["buchungstag", "beschreibung", "betrag", "gpt_input"]].rename(columns={
             "buchungstag": "datum"
         })
 
     except Exception as e:
         st.error(f"Fehler beim Verarbeiten der Sparkasse-Daten: {e}")
         return None
+
 
 def konvertiere_mein_spezialformat(df):
     try:
@@ -94,17 +108,33 @@ def konvertiere_mein_spezialformat(df):
             .str.replace(",", ".", regex=False)
             .astype(float)
         )
+
+        # Beschreibung für UI
         df["beschreibung"] = (
             df["empfänger/auftraggeber"].fillna("") + " — " +
-            df["verwendungszweck"].fillna("").str.slice(0, 50)
+            df["verwendungszweck"].fillna("")
         )
 
-        return df[["buchungstag", "beschreibung", "betrag"]].rename(columns={
+        # Beteiligter = Empfänger/Auftraggeber
+        df["beteiligter"] = df["empfänger/auftraggeber"].fillna("Unbekannt")
+
+        # GPT Input-Spalte
+        df["gpt_input"] = (
+            "[" + df["umsatzart"].fillna("") + "] " +
+            df["buchungstag"].dt.strftime("%Y-%m-%d") + " | " +
+            df["betrag"].round(2).astype(str) + " EUR | " +
+            df["verwendungszweck"].fillna("").str.strip() + " | " +
+            "Beteiligter: " + df["beteiligter"]
+        )
+
+        return df[["buchungstag", "beschreibung", "betrag", "gpt_input"]].rename(columns={
             "buchungstag": "datum"
         })
+
     except Exception as e:
         st.error(f"Fehler beim Verarbeiten deiner CSV-Datei: {e}")
         return None
+
 
 
 # ------------------- ZKP Hash Funktion -------------------
