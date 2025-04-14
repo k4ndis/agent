@@ -144,23 +144,6 @@ st.markdown(f'''
 # ➕ Aktives Modell anzeigen
 st.markdown(f"🔍 Aktives GPT-Modell: **{st.session_state.get('gpt_model', '–')}**")
 
-# ZKP-Hash anzeigen, wenn vorhanden (und ein Nutzer eingeloggt ist)
-if st.session_state.get("user") and st.session_state.get("zkp_hash"):
-    try:
-        zkp_hash = st.session_state.zkp_hash  # ✅ Verwende gespeicherten Hash
-        st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
-        st.code(zkp_hash, language="bash")
-
-        from supabase_client import is_hash_verified
-        user_id = st.session_state.user.id
-        if is_hash_verified(user_id, zkp_hash):
-            st.success("✅ Verifiziert: Der ZKP-Hash wurde bereits in Supabase gespeichert.")
-        else:
-            st.warning("❌ Nicht verifiziert: Dieser Hash ist noch nicht in Supabase registriert.")
-
-    except Exception as e:
-        st.markdown(f"⚠️ Fehler beim Hashing: {e}")
-
 
 # Logout + Session-Reset
 #if st.sidebar.button("🚪 Logout"):
