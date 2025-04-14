@@ -100,6 +100,13 @@ if st.session_state.user is None:
 
     st.stop()
 
+    # Spezialfall: Bericht aus History laden → seite setzen BEVOR Sidebar gebaut wird
+    if st.session_state.get("report_requested"):
+        st.session_state.report_requested = False
+        st.session_state.seite = "📁 Report"
+        st.rerun()
+
+
 
 # ------------------- BESTÄTIGUNG PRÜFEN -------------------
 user = get_user()
@@ -582,8 +589,9 @@ elif st.session_state.seite == "📂 History":
                 if st.button(f"🔁 Bericht laden", key=f"bericht_{idx}"):
                     st.session_state.selected_report = eintrag
                     st.session_state.zkp_hash = eintrag.get("zkp_hash")
-                    st.session_state.seite = "📁 Report"
+                    st.session_state.report_requested = True  # ✅ nur ein Flag setzen
                     st.rerun()
+
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
 
