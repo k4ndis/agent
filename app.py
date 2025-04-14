@@ -165,7 +165,7 @@ if "openai_key" not in st.session_state:
 # ------------------- SIDEBAR -------------------
 #st.sidebar.title("📂 Navigation")
 #seiten = [
-#    "🔼 Transaktionen hochladen",
+#    "🔼 File-Upload",
 #    "🤖 KI-Kategorisierung",
 #    "📊 Analyse & Score",
 #    "📈 Visualisierung",
@@ -225,7 +225,7 @@ with st.sidebar:
         # 📁 Navigation
         st.markdown("### 📂 Navigation")
         st.radio("Wähle eine Ansicht:", [
-            "🔼 Transaktionen hochladen",
+            "🔼 File-Upload",
             "🤖 KI-Kategorisierung",
             "📊 Analyse & Score",
             "📈 Visualisierung",
@@ -251,7 +251,7 @@ with st.sidebar:
 
 # ------------------- HAUPT-INHALTE -------------------
 
-if st.session_state.seite == "🔼 Transaktionen hochladen":
+if st.session_state.seite == "🔼 File-Upload":
     st.header("Transaktionsdaten hochladen")
     uploaded_file = st.file_uploader("CSV-Datei oder anderes Format hochladen", type=["csv"])
     if uploaded_file:
@@ -266,11 +266,11 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
             st.session_state.df = df
             st.session_state.zkp_hash = zkp_hash  # ✅ wichtig für spätere Anzeige
             st.success("Datei wurde erfolgreich geladen und erkannt.")
+
             # 📄 input.json für Noir generieren
             from importer import exportiere_input_json
             hash_array, secret_bytes = exportiere_input_json(df)
             from supabase_client import is_hash_verified
-
             import json
 
             st.download_button(
@@ -286,10 +286,13 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
             # ZKP-Hash direkt anzeigen
             st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
             st.code(zkp_hash, language="bash")
-            
-            # ZKP-Status anzeigen (nur beim Upload!)
+
+            # ✅ ZKP-Status prüfen & merken (nur beim Upload!)
             user_id = st.session_state.user.id
-            if is_hash_verified(user_id, zkp_hash):
+            is_verified = is_hash_verified(user_id, zkp_hash)
+            st.session_state.zkp_hash_status = "verified" if is_verified else "generated"
+
+            if st.session_state.zkp_hash_status == "verified":
                 st.success("✅ ZKP-Hash verified (bereits gespeichert)")
             else:
                 st.info("🟢 ZKP-Hash generiert und gespeichert")
@@ -304,7 +307,7 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
             df = df.fillna("")
 
-            # 🔽 Jetzt safe speichern            
+            # 🔽 Jetzt safe speichern
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
