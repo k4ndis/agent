@@ -319,6 +319,7 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
 
             # 💾 In Strings umwandeln (JSON-safe)
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
+            df = df.fillna("")
 
             # 🔽 Jetzt safe speichern            
             save_report(
@@ -387,6 +388,8 @@ elif st.session_state.seite == "🤖 KI-Kategorisierung":
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
 
+            df = df.fillna("")  # 🧼 Entfernt NaN/None für saubere JSON-Speicherung
+
             from importer import erstelle_hash_von_dataframe
             zkp_hash = erstelle_hash_von_dataframe(df)
 
@@ -434,6 +437,8 @@ elif st.session_state.seite == "📊 Analyse & Score":
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
 
+            df = df.fillna("")  # 🧼 Entfernt NaN/None für saubere JSON-Speicherung
+
             from importer import erstelle_hash_von_dataframe
             zkp_hash = erstelle_hash_von_dataframe(df)
 
@@ -477,6 +482,8 @@ elif st.session_state.seite == "📊 Analyse & Score":
             min_datum = df["datum"].min().strftime("%Y-%m-%d")
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
+
+            df = df.fillna("")  # 🧼 Entfernt NaN/None für saubere JSON-Speicherung
 
             from importer import erstelle_hash_von_dataframe
             zkp_hash = erstelle_hash_von_dataframe(df)
