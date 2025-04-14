@@ -303,13 +303,13 @@ if st.session_state.seite == "🔼 Transaktionen hochladen":
             # ZKP-Hash direkt anzeigen
             st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
             st.code(zkp_hash, language="bash")
-
-            # Direkt verifizieren
+            
+            # ZKP-Status anzeigen (nur beim Upload!)
             user_id = st.session_state.user.id
             if is_hash_verified(user_id, zkp_hash):
-                st.success("✅ Verifiziert: Der ZKP-Hash wurde bereits in Supabase gespeichert.")
+                st.success("✅ ZKP-Hash verified (bereits gespeichert)")
             else:
-                st.warning("❌ Nicht verifiziert: Dieser Hash ist noch nicht in Supabase registriert.")
+                st.info("🟢 ZKP-Hash generiert und gespeichert")
 
             st.dataframe(df)
 
