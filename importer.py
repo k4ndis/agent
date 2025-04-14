@@ -42,6 +42,12 @@ def parse_transaktion_datei(file):
 
     df.columns = df.columns.str.strip().str.lower()
 
+    # 🛠 Bekannte Abweichungen in Spaltennamen korrigieren
+    ersetzungen = {
+        "beguenstigter/zahlungspflichtiger": "begünstigter/zahlungspflichtiger"
+    }
+    df.rename(columns=ersetzungen, inplace=True)
+
     if "buchungstag" in df.columns and "verwendungszweck" in df.columns:
         konvertiert = konvertiere_sparkasse(df)
         if konvertiert is not None:
@@ -79,7 +85,7 @@ def konvertiere_sparkasse(df):
         )
 
         # Beteiligter (optional)
-        df["beteiligter"] = df["begünstigter/zahlungspflichtiger"].fillna("Unbekannt")
+        df["beteiligter"] = df.get("begünstigter/zahlungspflichtiger", "Unbekannt")
 
         # 🧠 GPT Input mit Zusatz
         df["gpt_input"] = (
