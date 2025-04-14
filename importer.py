@@ -96,7 +96,7 @@ def konvertiere_sparkasse(df):
             "Beteiligter: " + df["beteiligter"]
         )
 
-        return df[["buchungstag", "beschreibung", "betrag", "gpt_input"]].rename(columns={
+        return df[["buchungstag", "betrag", "beschreibung", "gpt_input"]].rename(columns={
             "buchungstag": "datum"
         })
 

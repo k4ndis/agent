@@ -651,24 +651,25 @@ elif st.session_state.seite == "🧪 Mapping-Check":
 
         from kategorie_mapping import map_to_standardkategorie
 
-        # ✅ Nur noch mit GPT Kategorie mappen
+        # ✅ Mapping nur noch auf GPT Kategorie
         df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
-        df["Status"] = df.apply(
-            lambda row: "✅" if row["Gemappte Kategorie"] != "Sonstiges" else "⚠️ Nicht gemappt",
-            axis=1
+
+        # ✅ Status setzen (erfolgreich gemappt oder nicht)
+        df["Status"] = df["Gemappte Kategorie"].apply(
+            lambda x: "✅" if x != "Sonstiges" else "⚠️ Nicht gemappt"
         )
 
         st.success(f"{len(df)} Transaktionen geprüft.")
 
-        # 🧾 Übersichtstabelle mit angepassten Spalten
+        # 🧾 Übersichtstabelle mit finalem Spalten-Set
         st.dataframe(df[["beschreibung", "gpt_input", "GPT Kategorie", "Gemappte Kategorie", "Status"]])
 
-        # 📊 Statistik
+        # 📊 Statistik-Anzeige
         anzahl_nicht_gemappt = df[df["Gemappte Kategorie"] == "Sonstiges"].shape[0]
         gesamt = df.shape[0]
         st.markdown(f"🔎 **Nicht gemappt:** {anzahl_nicht_gemappt} von {gesamt} → **{round(anzahl_nicht_gemappt / gesamt * 100, 2)} %**")
 
-        # 💡 GPT-Vorschläge für nicht gemappte Kategorien
+        # 💡 GPT-Vorschläge für fehlende Mappings
         api_key = st.text_input("🔑 OpenAI API Key (für Vorschläge)", type="password")
         if api_key and anzahl_nicht_gemappt > 0:
             from openai import OpenAI
@@ -704,7 +705,6 @@ Antworte **nur mit einem der Begriffe**.
             fehlende = df[df["Gemappte Kategorie"] == "Sonstiges"].copy()
             fehlende["GPT-Vorschlag"] = fehlende["GPT Kategorie"].apply(gpt_mapping_vorschlag)
             st.dataframe(fehlende[["GPT Kategorie", "GPT-Vorschlag"]])
-
 
 # ------------------- Floating Chat Assistent (PrimAI Agent basiert) -------------------
 
