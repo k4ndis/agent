@@ -132,7 +132,7 @@ if "last_saved" not in st.session_state:
 letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
 st.markdown(f'''
 <div class="top-header">
-    <h1>💸 PrimAI Finance Agent</h1>
+    <h1>💸 PrimAgent</h1>
     <div>
         🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
         💾 Letzter Sync: <b>{letzte_sync}</b>
@@ -166,13 +166,13 @@ if "openai_key" not in st.session_state:
 #st.sidebar.title("📂 Navigation")
 #seiten = [
 #    "🔼 File-Upload",
-#    "🤖 KI-Kategorisierung",
-#    "📊 Analyse & Score",
-#    "📈 Visualisierung",
-#    "📂 Mein Verlauf",
-#    "📁 Bericht anzeigen",
+#    "🤖 Mapping",
+#    "📊 Rating",
+#    "📈 Charts",
+#    "📂 History",
+#    "📁 Report",
 #    "🧪 Mapping-Check",
-#    "🤖 PrimAI Agentenanalyse",
+#    "🤖 Prompt Engineering",
 
 #]
 
@@ -199,7 +199,7 @@ with st.sidebar:
         # 🔑 OpenAI API Key (sichtbar, kein Expander)
         st.text_input("🔑 OpenAI API Key", type="password", key="openai_key")
 
-        # 🤖 GPT-Agent auswählen
+        # 🤖 PrimAgent auswählen
         AGENTEN = {
             "Analyse-Agent": "analyse",
             "Optimierungs-Agent": "optimierung",
@@ -211,7 +211,7 @@ with st.sidebar:
             st.session_state.gpt_agent_role = "analyse"
 
         st.selectbox(
-            "🧠 GPT-Agent wählen",
+            "🧠 PrimAgent",
             options=list(AGENTEN.keys()),
             index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
             key="gpt_agent_role_name"
@@ -223,16 +223,16 @@ with st.sidebar:
         st.session_state.gpt_model = GPT_MODE
 
         # 📁 Navigation
-        st.markdown("### 📂 Navigation")
-        st.radio("Wähle eine Ansicht:", [
+        
+        st.radio("", [
             "🔼 File-Upload",
-            "🤖 KI-Kategorisierung",
-            "📊 Analyse & Score",
-            "📈 Visualisierung",
-            "📂 Mein Verlauf",
-            "📁 Bericht anzeigen",
+            "🤖 Mapping",
+            "📊 Rating",
+            "📈 Charts",
+            "📂 History",
+            "📁 Report",
             "🧪 Mapping-Check",
-            "🤖 PrimAI Agentenanalyse"
+            "🤖 Prompt Engineering"
         ], key="seite")
 
     else:
@@ -252,7 +252,7 @@ with st.sidebar:
 # ------------------- HAUPT-INHALTE -------------------
 
 if st.session_state.seite == "🔼 File-Upload":
-    st.header("Transaktionsdaten hochladen")
+    st.header("File-Upload")
     uploaded_file = st.file_uploader("CSV-Datei oder anderes Format hochladen", type=["csv"])
     if uploaded_file:
         parsed = parse_transaktion_datei(uploaded_file)
@@ -329,10 +329,10 @@ if st.session_state.seite == "🔼 File-Upload":
             st.error("Datei konnte nicht verarbeitet werden.")
 
 
-elif st.session_state.seite == "🤖 KI-Kategorisierung":
-    st.header("KI-Kategorisierung")
+elif st.session_state.seite == "🤖 Mapping":
+    st.header("Mapping")
     if st.session_state.df is None:
-        st.warning("Bitte zuerst Transaktionsdaten hochladen.")
+        st.warning("Bitte zuerst File hochladen.")
     else:
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
@@ -365,10 +365,10 @@ elif st.session_state.seite == "🤖 KI-Kategorisierung":
 
 
             st.session_state.df = df
-            st.success("KI-Kategorisierung abgeschlossen.")
+            st.success("Mapping abgeschlossen.")
             st.dataframe(df[["gpt_input", "betrag", "GPT Rohkategorie", "GPT Kategorie"]])
 
-            # ✅ automatisch speichern nach KI-Kategorisierung
+            # ✅ automatisch speichern nach Mapping
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
             min_datum = df["datum"].min().strftime("%Y-%m-%d")
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
@@ -398,10 +398,10 @@ elif st.session_state.seite == "🤖 KI-Kategorisierung":
                 st.warning("🔴 Noch nicht gespeichert.")
 
 
-elif st.session_state.seite == "📊 Analyse & Score":
+elif st.session_state.seite == "📊 Rating":
     st.header("PAA - PrimAI Agent Analyse")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
-        st.warning("Bitte zuerst eine KI-Kategorisierung durchführen.")
+        st.warning("Bitte zuerst Mapping durchführen.")
     else:
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
@@ -490,11 +490,11 @@ elif st.session_state.seite == "📊 Analyse & Score":
             st.session_state.last_saved = datetime.datetime.now()
 
 
-# ------------------- Visualisierung -------------------
-elif st.session_state.seite == "📈 Visualisierung":
-    st.header("Visualisierung nach Monat und Kategorie")
+# ------------------- Charts -------------------
+elif st.session_state.seite == "📈 Charts":
+    st.header("Charts nach Monat und Kategorie")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
-        st.warning("Bitte lade zuerst Daten hoch und führe die KI-Kategorisierung durch.")
+        st.warning("Bitte lade zuerst Daten hoch und führe Mapping aus.")
     else:
         import plotly.express as px
 
@@ -557,8 +557,8 @@ elif st.session_state.seite == "🧑‍💼 Admin (alle Nutzerberichte)":
         st.info("Noch keine gespeicherten Berichte vorhanden.")
 
 
-# ------------------- Mein Verlauf -------------------
-elif st.session_state.seite == "📂 Mein Verlauf":
+# ------------------- History -------------------
+elif st.session_state.seite == "📂 History":
     st.header("📂 Mein persönlicher Analyse-Verlauf")
     from supabase_client import load_reports
 
@@ -582,14 +582,14 @@ elif st.session_state.seite == "📂 Mein Verlauf":
                 if st.button(f"🔁 Bericht laden", key=f"bericht_{idx}"):
                     st.session_state.selected_report = eintrag
                     st.session_state.zkp_hash = eintrag.get("zkp_hash")
-                    st.session_state.seite = "📁 Bericht anzeigen"
+                    st.session_state.seite = "📁 Report"
                     st.rerun()
     else:
         st.info("Noch keine gespeicherten Berichte gefunden.")
 
 
-# ------------------- Bericht anzeigen -------------------
-elif st.session_state.seite == "📁 Bericht anzeigen":
+# ------------------- Report -------------------
+elif st.session_state.seite == "📁 Report":
     st.header("📁 Bericht anzeigen")
 
     if "selected_report" not in st.session_state:
@@ -637,7 +637,7 @@ elif st.session_state.seite == "🧪 Mapping-Check":
     st.header("PMA - PrimAI Mapping Analyse")
 
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
-        st.warning("Bitte lade zuerst Daten hoch und führe die KI-Kategorisierung durch.")
+        st.warning("Bitte lade zuerst Daten hoch und führe Mapping aus.")
     else:
         df = st.session_state.df.copy()
         
@@ -803,7 +803,7 @@ if st.session_state.chatbox_visible:
 
 
 # ------------------- Agentenanalyse -------------------
-elif st.session_state.seite == "🤖 PrimAI Agentenanalyse":
+elif st.session_state.seite == "🤖 Prompt Engineering":
     from gpt_agent import call_gpt_agent
 
     st.header(f"🤖 PrimAI Analyse mit dem {st.session_state.get('gpt_agent_role_name', 'Analyse-Agent')}")
