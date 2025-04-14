@@ -16,11 +16,12 @@ Hier sind Transaktionen mit ihren GPT-Kategorien:
 {zusammenfassung}
 
 Bitte analysiere:
-1. Wie hoch ist der ungefähre Anteil fixer Ausgaben (z. B. Miete, Abos, Versicherungen)?
+1. Wie hoch ist der Anteil fixer Einnahmen (z.B. Lohn, Gehalt, Gutschrift)?
+1. Wie hoch ist der Anteil fixer Ausgaben (z. B. Miete, Abos, Versicherungen)?
 2. Welche Ausgaben erscheinen optional oder vermeidbar?
 3. Gibt es auffällige Muster wie viele Bestellungen, hohe Mobilitätskosten, Spontankäufe?
 
-Wie würde eine Bank dieses Verhalten bewerten in Bezug auf:
+Bewerte dieses Verhalten in Bezug auf:
 - Rücklagen (Sparquote)
 - Kreditwürdigkeit
 - Risiko (z. B. Dispo-Nutzung, Luxusausgaben, Spontanausgaben)
@@ -108,4 +109,4 @@ Bitte antworte in kurzen Absätzen mit klaren Tipps, ohne Fachjargon.
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"Fehler bei GPT-Empfehlung: {e}"
+        return f"Fehler bei PrimAI-Empfehlung: {e}"

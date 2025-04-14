@@ -399,21 +399,21 @@ elif st.session_state.seite == "🤖 Mapping":
 
 
 elif st.session_state.seite == "📊 Rating":
-    st.header("PAA - PrimAI Agent Analyse")
+    st.header("Rating")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte zuerst Mapping durchführen.")
     else:
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
         if api_key and st.button("Finanzverhalten analysieren"):
-            with st.spinner("Prima AI bewertet dein Finanzverhalten..."):
+            with st.spinner("PrimAI bewertet dein Finanzverhalten..."):
                 auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
                 st.session_state["gpt_score"] = auswertung
-            st.success("Analyse abgeschlossen")
+            st.success("Rating abgeschlossen")
 
         # 🎯 Anzeige der gespeicherten Auswertung (auch nach Klick auf „Empfehlungen anzeigen“)
         if "gpt_score" in st.session_state:
-            st.subheader("🧠 GPT Analyse des Finanzverhaltens")
+            st.subheader("🧠 Analyse des Finanzverhaltens")
             st.markdown(st.session_state["gpt_score"])
 
             
@@ -623,7 +623,7 @@ elif st.session_state.seite == "📁 Report":
             st.info("Für diesen Bericht wurde noch keine Analyse durchgeführt.")
 
         if "gpt_recommendation" in eintrag and eintrag["gpt_recommendation"]:
-            st.subheader("📌 GPT-Empfehlungen")
+            st.subheader("📌 PrimAI-Empfehlungen")
             st.markdown(eintrag["gpt_recommendation"])
 
         st.markdown("Letzter Sync: " + (
