@@ -67,7 +67,12 @@ Antwort: **Nur die Kategorien – eine pro Zeile**, ohne zusätzliche Erklärung
         with open(cache_file, "r", encoding="utf-8") as f:
             gpt_cache = json.load(f)
 
-    beschreibungen_neu = [b for b in beschreibungen if b and b.strip() and b not in gpt_cache]
+    beschreibungen_neu = []
+    for b in beschreibungen:
+        b_str = str(b).strip()
+        if b_str and b_str not in gpt_cache:
+            beschreibungen_neu.append(b_str)
+
     print(f"➕ {len(beschreibungen_neu)} neue Transaktionen werden analysiert.")
 
     kategorien_roh = []
