@@ -136,16 +136,22 @@ if "last_saved" not in st.session_state:
 
 
 # ------------------- HEADER -------------------
+from PIL import Image
+
 letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
-st.markdown(f'''
-<div class="top-header">
-    <h1>💸 PrimAgent</h1>
-    <div>
-        🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
-        💾 Letzter Sync: <b>{letzte_sync}</b>
+logo = Image.open("PrimAI_logo.png")  # Pfad ggf. anpassen
+
+col1, col2 = st.columns([1, 4])
+with col1:
+    st.image(logo, width=100)
+with col2:
+    st.markdown(f'''
+    <div style="margin-top: 20px;">
+        <h1>💸 PrimAgent</h1>
+        <p>🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
+        💾 Letzter Sync: <b>{letzte_sync}</b></p>
     </div>
-</div>
-''', unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
 
 # ➕ Aktives Modell anzeigen
