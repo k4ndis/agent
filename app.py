@@ -138,8 +138,7 @@ if "last_saved" not in st.session_state:
 # ------------------- HEADER -------------------
 letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
 st.markdown(f'''
-<div class="top-header">
-    <h1>💸 PrimAgent</h1>
+<div class="top-header">    
     <div>
         🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
         💾 Letzter Sync: <b>{letzte_sync}</b>
