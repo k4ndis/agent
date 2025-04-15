@@ -118,7 +118,7 @@ if st.session_state.user is None:
     # Spezialfall: Bericht aus History laden → seite setzen BEVOR Sidebar gebaut wird
     if st.session_state.get("report_requested"):
         st.session_state.report_requested = False
-        st.session_state.seite = "📁 Report"
+        st.session_state.seite = "Report"
         st.rerun()
 
 
@@ -157,12 +157,12 @@ user_email = st.session_state.user.email
 st.markdown(f"""
 <div class="topbar">
     <div class="topbar-left">
-        <img src="data:image/png;base64,{logo_base64}" alt="PrimAI Logo">        
+        🔐 Eingeloggt als: <b>{user_email}</b><br>
+        💾 Letzter Sync: <b>{letzte_sync}</b><br>
+        🤖 Modell: <b>{st.session_state.get('gpt_model', '–')}</b>
     </div>
     <div class="topbar-right">
-        🔐 Eingeloggt als: <b>{user_email}</b><br>
-        💾 Letzter Sync: <b>{letzte_sync}</b>
-        💬 Modell: <b>{st.session_state.get('gpt_model', '–')}</b>
+        <!-- Optional: Platz für Buttons / Status / Logo später -->
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -221,14 +221,14 @@ with st.sidebar:
         st.session_state.seite = option_menu(
             menu_title=None,
             options=[
-                "🔼 File-Upload",
-                "🤖 Mapping",
-                "📊 Rating",
-                "📈 Charts",
-                "📂 History",
-                "📁 Report",
-                "🧪 Mapping-Check",
-                "🤖 Prompt Engineering"
+                "File-Upload",
+                "Mapping",
+                "Rating",
+                "Charts",
+                "History",
+                "Report",
+                "Mapping-Check",
+                "Prompt Engineering"
             ],
             icons=["upload", "robot", "bar-chart", "activity", "folder", "file-earmark", "search", "cpu"],
             default_index=0,
@@ -278,7 +278,7 @@ with st.sidebar:
 # ------------------- HAUPT-INHALTE -------------------
 
 # ------------------- File Upload -------------------
-if st.session_state.seite == "🔼 File-Upload":
+if st.session_state.seite == "File-Upload":
     st.header("File-Upload")
     uploaded_file = st.file_uploader("CSV-Datei oder anderes Format hochladen", type=["csv"])
     if uploaded_file:
@@ -357,7 +357,7 @@ if st.session_state.seite == "🔼 File-Upload":
 
 
 # ------------------- Mapping -------------------
-elif st.session_state.seite == "🤖 Mapping":
+elif st.session_state.seite == "Mapping":
     st.header("Mapping")
     if st.session_state.df is None:
         st.warning("Bitte zuerst File hochladen.")
@@ -404,7 +404,7 @@ elif st.session_state.seite == "🤖 Mapping":
 
 
 # ------------------- Rating -------------------
-elif st.session_state.seite == "📊 Rating":
+elif st.session_state.seite == "Rating":
     st.header("Rating")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte zuerst Mapping durchführen.")
@@ -497,7 +497,7 @@ elif st.session_state.seite == "📊 Rating":
 
 
 # ------------------- Charts -------------------
-elif st.session_state.seite == "📈 Charts":
+elif st.session_state.seite == "Charts":
     st.markdown("## 📊 Monatsbasierte Finanzvisualisierung")
 
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
@@ -597,8 +597,8 @@ elif st.session_state.seite == "🧑‍💼 Admin (alle Nutzerberichte)":
 
 
 # ------------------- History -------------------
-elif st.session_state.seite == "📂 History":
-    st.header("📂 Reports")
+elif st.session_state.seite == "History":
+    st.header("Reports")
     from supabase_client import load_reports
 
     res = load_reports(st.session_state.user.id)
@@ -629,8 +629,8 @@ elif st.session_state.seite == "📂 History":
 
 
 # ------------------- Report -------------------
-elif st.session_state.seite == "📁 Report":
-    st.header("📁 Bericht anzeigen")
+elif st.session_state.seite == "Report":
+    st.header("Bericht anzeigen")
 
     if "selected_report" not in st.session_state:
         st.warning("Es wurde noch kein Bericht geladen.")
@@ -673,7 +673,7 @@ elif st.session_state.seite == "📁 Report":
 
 
 # ------------------- Mapping Check -------------------
-elif st.session_state.seite == "🧪 Mapping-Check":
+elif st.session_state.seite == "Mapping-Check":
     st.header("Mapping Check")
 
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
@@ -896,8 +896,8 @@ Du darfst Summen berechnen und nachvollziehen, wie die Einschätzungen zustande 
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ------------------- Agentenanalyse -------------------
-elif st.session_state.seite == "🤖 Prompt Engineering":
+# ------------------- Prompt Engineering -------------------
+elif st.session_state.seite == "Prompt Engineering":
     from gpt_agent import call_gpt_agent
 
     st.header(f"🤖 PrimAI Analyse mit dem {st.session_state.get('gpt_agent_role_name', 'Analyse-Agent')}")
