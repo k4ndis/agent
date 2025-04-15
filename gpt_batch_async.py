@@ -108,4 +108,4 @@ Antwort: **Nur die Kategorien – eine pro Zeile**, ohne zusätzliche Erklärung
         kategorien_roh.append(roh)
         kategorien_gemappt.append(map_to_standardkategorie(roh))
 
-    return kategorien_roh, kategorien_gemappt
+    return kategorien_gemappt

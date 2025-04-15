@@ -319,13 +319,10 @@ elif st.session_state.seite == "🤖 Mapping":
             alle_beschreibungen = df["gpt_input"].tolist()
             with st.spinner(f"Starte PrimAI-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
                 gpt_kategorien = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
-
-            # Nur eine Kategorie pro Eintrag (keine Rohkategorie mehr nötig)
+            
+            # GPT liefert direkt die gemappte Kategorie
             df["GPT Kategorie"] = gpt_kategorien
-
-            # Finales Mapping zu Standard-Kategorien
-            from kategorie_mapping import map_to_standardkategorie
-            df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
+            df["Gemappte Kategorie"] = df["GPT Kategorie"]  # identisch
 
             st.session_state.df = df
             st.success("Mapping abgeschlossen.")
