@@ -449,11 +449,13 @@ elif st.session_state.seite == "📊 Rating":
 
 # ------------------- Charts -------------------
 elif st.session_state.seite == "📈 Charts":
-    st.header("Charts nach Monat und Kategorie")
+    st.markdown("## 📊 Monatsbasierte Finanzvisualisierung")
+
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
         st.warning("Bitte lade zuerst Daten hoch und führe Mapping aus.")
     else:
         import plotly.express as px
+        import plotly.graph_objects as go
 
         df = st.session_state.df.copy()
         df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
@@ -472,29 +474,60 @@ elif st.session_state.seite == "📈 Charts":
             ausgaben["GPT Kategorie"] = ausgaben["GPT Kategorie"].str.strip().str.replace(r"^[-–—•]*\s*", "", regex=True)
             kategorien_summe = ausgaben.groupby("GPT Kategorie")["betrag"].sum().abs().reset_index()
 
-            st.subheader("📊 Ausgaben nach Kategorie (Balken)")
+            st.markdown("### 📊 Ausgaben pro Kategorie (Balken)")
             bar = px.bar(kategorien_summe.sort_values("betrag"),
                          x="betrag", y="GPT Kategorie", orientation="h",
                          labels={"betrag": "Summe in EUR", "GPT Kategorie": "Kategorie"},
                          height=400)
+            bar.update_layout(paper_bgcolor="#f8f9fa", plot_bgcolor="#f8f9fa", font=dict(color="#222"))
             st.plotly_chart(bar, use_container_width=True)
 
-            st.subheader("📎 Ausgabenanteile (Kreisdiagramm)")
+            st.markdown("### 🧭 Ausgabenverteilung (Kreisdiagramm)")
             pie = px.pie(kategorien_summe,
                          values="betrag", names="GPT Kategorie",
                          title="Anteile der Ausgaben",
                          hole=0.3)
+            pie.update_traces(textinfo="percent+label")
+            pie.update_layout(showlegend=True, legend=dict(orientation="h"), height=400)
             st.plotly_chart(pie, use_container_width=True)
 
-            st.markdown("Letzte Aktualisierung: _automatisch beim GPT-Scan_ ✅")
-
-            st.subheader("📈 Monatsvergleich der Gesamtausgaben")
+            st.markdown("### 📅 Gesamtausgaben pro Monat (Vergleich)")
             monatsvergleich = df[df["betrag"] < 0].groupby("monat")["betrag"].sum().abs().reset_index()
             bar_monate = px.bar(monatsvergleich,
                                 x="monat", y="betrag",
                                 labels={"betrag": "Summe in EUR", "monat": "Monat"},
                                 title="Gesamtausgaben pro Monat")
             st.plotly_chart(bar_monate, use_container_width=True)
+
+            st.markdown("### 📈 Kategorie-Verlauf (Mini-Charts)")
+            df["monat"] = pd.to_datetime(df["datum"]).dt.to_period("M").astype(str)
+            ausgaben_df = df[df["betrag"] < 0].copy()
+
+            verlauf = ausgaben_df.groupby(["GPT Kategorie", "monat"])["betrag"].sum().abs().reset_index()
+            kategorien = verlauf["GPT Kategorie"].unique()
+
+            cols = st.columns(2)
+
+            for idx, kategorie in enumerate(kategorien):
+                data = verlauf[verlauf["GPT Kategorie"] == kategorie]
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=data["monat"],
+                    y=data["betrag"],
+                    mode="lines+markers",
+                    name=kategorie
+                ))
+                fig.update_layout(
+                    title=f"{kategorie}",
+                    margin=dict(l=10, r=10, t=40, b=30),
+                    height=200,
+                    showlegend=False,
+                    paper_bgcolor="#f8f9fa"
+                )
+                with cols[idx % 2]:
+                    st.plotly_chart(fig, use_container_width=True)
+
+            st.markdown("Letzte Aktualisierung: _automatisch beim PrimAI-Scan_ ✅")
 
 
 # ------------------- Admin -------------------
