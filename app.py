@@ -200,7 +200,7 @@ with st.sidebar:
         GPT_MODE = st.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
         st.session_state.gpt_model = GPT_MODE
 
-        # 📁 Navigation
+        # 📁 Navigation    
         
         st.session_state.seite = option_menu(
             menu_title=None,
@@ -218,18 +218,31 @@ with st.sidebar:
             default_index=0,
             orientation="vertical",
             styles={
-                "container": {"padding": "0!important", "background-color": "#111"},
-                "icon": {"color": "white", "font-size": "16px"},
+                "container": {
+                    "padding": "0!important",
+                    "background-color": "transparent",  # 🪄 gleiche Farbe wie Sidebar
+                },
+                "icon": {
+                    "color": "#444", 
+                    "font-size": "16px"
+                },
                 "nav-link": {
                     "font-size": "14px",
                     "text-align": "left",
-                    "margin": "0px",
-                    "color": "white",
-                    "padding": "10px 15px"
+                    "margin": "2px",
+                    "color": "#333",
+                    "padding": "10px 15px",
+                    "border-radius": "6px",
+                    "background-color": "transparent"
                 },
-                "nav-link-selected": {"background-color": "#cc1f1a", "color": "white"},
+                "nav-link-selected": {
+                    "background-color": "#e0e0e0",  # dezent hervorgehoben (hellgrau)
+                    "color": "black",
+                    "font-weight": "600"
+                }
             }
         )
+
 
 
     else:
