@@ -2,6 +2,8 @@ import os
 import json
 import datetime
 from supabase import create_client, Client
+import streamlit as st
+
 
 # Deine Supabase-Daten
 SUPABASE_URL = "https://hwbvflcbulikhyxpsvig.supabase.co"
@@ -20,7 +22,15 @@ def sign_up(email, password):
     return supabase.auth.sign_up({"email": email, "password": password})
 
 def sign_out():
-    return supabase.auth.sign_out()
+    # Supabase-Logout durchführen
+    response = supabase.auth.sign_out()
+
+    # 🧹 SessionState aufräumen: Chatverlauf löschen
+    for key in list(st.session_state.keys()):
+        if key.startswith("chat_history_"):
+            del st.session_state[key]
+
+    return response
 
 def get_user():
     try:

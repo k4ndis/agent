@@ -676,6 +676,8 @@ Antworte **nur mit einem der Begriffe**.
             fehlende["GPT-Vorschlag"] = fehlende["GPT Kategorie"].apply(gpt_mapping_vorschlag)
             st.dataframe(fehlende[["GPT Kategorie", "GPT-Vorschlag"]])
 
+
+# ------------------- Chatbot -------------------
 import openai
 import tiktoken
 import sys
@@ -689,13 +691,22 @@ def berechne_tokens(text: str, model="gpt-4"):
     tokens = encoding.encode(text)
     return len(tokens)
 
+# Benutzerinfo (für Chatverlauf)
+user = st.session_state.get("user")
+user_id = user["email"] if user and "email" in user else "global"
+chat_key = f"chat_history_{user_id}"
+
+# Initialisierung SessionState
 if "chatbox_visible" not in st.session_state:
     st.session_state.chatbox_visible = False
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if chat_key not in st.session_state:
+    st.session_state[chat_key] = []
 if "openai_key" not in st.session_state:
     st.session_state.openai_key = ""
 
+chat_history = st.session_state[chat_key]
+
+# Chat-Button
 st.markdown("""
 <style>
 #floating-chat-btn {
@@ -736,27 +747,24 @@ if st.session_state.chatbox_visible:
         with st.chat_message("assistant"):
             st.markdown("👋 Hallo! Ich bin dein PrimAI Finanzassistent. Frag mich gerne zur Analyse oder zu deinen Ausgaben.")
 
-        for msg in st.session_state.chat_history:
+        for msg in chat_history:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
         user_msg = st.chat_input("Was möchtest du wissen?")
         if user_msg:
             st.chat_message("user").markdown(user_msg)
-            st.session_state.chat_history.append({"role": "user", "content": user_msg})
+            chat_history.append({"role": "user", "content": user_msg})
 
             if not st.session_state.openai_key:
                 st.warning("🔑 Bitte gib deinen OpenAI API-Key ein.")
             else:
-                # ✅ Kontext aufbauen
                 context_parts = []
 
                 if st.session_state.get("df") is not None:
                     df = st.session_state.df.copy()
-
-                    # GPT-Input vorbereiten
                     gpt_inputs = df["gpt_input"].tolist()
-                    max_eintraege = 200  # Kannst du später dynamisch machen
+                    max_eintraege = 200
                     if len(gpt_inputs) > max_eintraege:
                         context_parts.append(f"⚠️ Hinweis: Nur die letzten {max_eintraege} Transaktionen wurden übergeben.")
                     gpt_input_block = "\n".join([str(i) for i in gpt_inputs[-max_eintraege:] if i])
@@ -768,7 +776,6 @@ if st.session_state.chatbox_visible:
                 if st.session_state.get("gpt_recommendation"):
                     context_parts.append("📌 GPT-Empfehlungen:\n" + st.session_state["gpt_recommendation"])
 
-                # GPT Prompt
                 context = "\n\n".join(context_parts)
                 system_prompt = """
 Du bist ein hilfreicher KI-Finanzassistent. Du kennst die Originaldaten (gpt_input), GPT-Analysen und Empfehlungen des Nutzers.
@@ -776,14 +783,12 @@ Beantworte alle Fragen dazu – auch zu Beträgen, Anteilen, Mustern, Risiken un
 Du darfst Summen berechnen und nachvollziehen, wie die Einschätzungen zustande kamen.
                 """.strip()
 
-                # Token zählen vor dem Request
                 prompt_text = f"{system_prompt}\n\n{context}\n\nFrage: {user_msg}"
                 prompt_tokens = berechne_tokens(prompt_text, model="gpt-4")
 
-                # Warnung bei zu viel
                 if prompt_tokens > 95000:
                     st.warning(f"⚠️ Achtung: Dein Prompt ist sehr lang ({prompt_tokens} Tokens). GPT könnte abschneiden.")
-                
+
                 try:
                     client = openai.OpenAI(api_key=st.session_state.openai_key)
                     response = client.chat.completions.create(
@@ -809,12 +814,11 @@ Du darfst Summen berechnen und nachvollziehen, wie die Einschätzungen zustande 
 - Antwort: {completion_tokens} Tokens → ca. ${kosten_completion:.4f}  
 - **Gesamt:** {gesamt_tokens} Tokens → **ca. ${kosten_gesamt:.4f}**
 """)
-
                 except Exception as e:
                     reply = f"Fehler: {e}"
 
                 st.chat_message("assistant").markdown(reply)
-                st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                chat_history.append({"role": "assistant", "content": reply})
 
         st.markdown("</div>", unsafe_allow_html=True)
 
