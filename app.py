@@ -8,7 +8,14 @@ import asyncio
 import matplotlib.pyplot as plt
 import datetime
 from streamlit_option_menu import option_menu
+import base64
+from pathlib import Path
 
+def get_base64_logo(path):
+    with open(path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+logo_base64 = get_base64_logo("PrimAI_logo.png")
 
 st.set_page_config(page_title="PrimAI", layout="wide")
 
@@ -150,20 +157,15 @@ user_email = st.session_state.user.email
 st.markdown(f"""
 <div class="topbar">
     <div class="topbar-left">
-        <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/PrimAI_logo.png" alt="PrimAI Logo">
-        <strong>PrimAI</strong>
+        <img src="data:image/png;base64,{logo_base64}" alt="PrimAI Logo">        
     </div>
     <div class="topbar-right">
         🔐 Eingeloggt als: <b>{user_email}</b><br>
         💾 Letzter Sync: <b>{letzte_sync}</b>
+        💬 Modell: <b>{st.session_state.get('gpt_model', '–')}</b>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
-
-# ➕ Aktives Modell anzeigen
-st.markdown(f"🔍 Aktives GPT-Modell: **{st.session_state.get('gpt_model', '–')}**")
 
 # 🧠 API-Key einmalig setzen (gilt für Assistent + Kategorisierung + Score)
 if "openai_key" not in st.session_state:
