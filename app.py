@@ -228,6 +228,7 @@ with st.sidebar:
 
 # ------------------- HAUPT-INHALTE -------------------
 
+# ------------------- File Upload -------------------
 if st.session_state.seite == "🔼 File-Upload":
     st.header("File-Upload")
     uploaded_file = st.file_uploader("CSV-Datei oder anderes Format hochladen", type=["csv"])
@@ -306,6 +307,7 @@ if st.session_state.seite == "🔼 File-Upload":
             st.error("Datei konnte nicht verarbeitet werden.")
 
 
+# ------------------- Mapping -------------------
 elif st.session_state.seite == "🤖 Mapping":
     st.header("Mapping")
     if st.session_state.df is None:
@@ -316,42 +318,25 @@ elif st.session_state.seite == "🤖 Mapping":
         if api_key:
             alle_beschreibungen = df["gpt_input"].tolist()
             with st.spinner(f"Starte PrimAI-Analyse für {len(alle_beschreibungen)} Transaktionen..."):
-                roh_kategorien, gemappt = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
+                gpt_kategorien = asyncio.run(gpt_kategorien_batch_async(alle_beschreibungen, api_key, model=GPT_MODE))
 
-            df["GPT Rohkategorie"] = roh_kategorien
-            df["GPT Kategorie"] = gemappt
+            # Nur eine Kategorie pro Eintrag (keine Rohkategorie mehr nötig)
+            df["GPT Kategorie"] = gpt_kategorien
 
-            # ✅ GPT Kategorie korrigieren, wenn Rohkategorie eigentlich schon passt
-            VALID_KATEGORIEN = [
-                "Lebensmittel", "Mobilität", "Shopping", "Abonnements", "Einkommen",
-                "Versicherungen", "Wohnen", "Nebenkosten", "Gebühren", "Bankdienste",
-                "EC Karte", "Kreditkarte", "Bargeld", "Kredite", "Steuern",
-                "Spenden", "Gesundheit", "Fitness", "Drogerie", "Unterhaltung"
-            ]
-
-            df["GPT Kategorie"] = df.apply(
-                lambda row: row["GPT Rohkategorie"]
-                if row["GPT Kategorie"] == "Sonstiges" and row["GPT Rohkategorie"] in VALID_KATEGORIEN
-                else row["GPT Kategorie"],
-                axis=1
-            )
-
+            # Finales Mapping zu Standard-Kategorien
             from kategorie_mapping import map_to_standardkategorie
             df["Gemappte Kategorie"] = df["GPT Kategorie"].apply(map_to_standardkategorie)
 
-
-
             st.session_state.df = df
             st.success("Mapping abgeschlossen.")
-            st.dataframe(df[["datum", "betrag", "gpt_input", "GPT Kategorie"]])
+            st.dataframe(df[["datum", "betrag", "gpt_input", "GPT Kategorie", "Gemappte Kategorie"]])
 
             # ✅ automatisch speichern nach Mapping
             df["datum"] = pd.to_datetime(df["datum"], errors="coerce")
             min_datum = df["datum"].min().strftime("%Y-%m-%d")
             max_datum = df["datum"].max().strftime("%Y-%m-%d")
             df["datum"] = df["datum"].dt.strftime("%Y-%m-%d")
-
-            df = df.fillna("")  # 🧼 Entfernt NaN/None für saubere JSON-Speicherung
+            df = df.fillna("")
 
             from importer import erstelle_hash_von_dataframe
             zkp_hash = erstelle_hash_von_dataframe(df)
@@ -368,13 +353,11 @@ elif st.session_state.seite == "🤖 Mapping":
             )
             st.session_state.last_saved = datetime.datetime.now()
 
-            if st.session_state.last_saved:
-                letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
-                st.info(f"🟢 Zuletzt gespeichert: {letzte}")
-            else:
-                st.warning("🔴 Noch nicht gespeichert.")
+            letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
+            st.info(f"🟢 Zuletzt gespeichert: {letzte}")
 
 
+# ------------------- Rating -------------------
 elif st.session_state.seite == "📊 Rating":
     st.header("Rating")
     if st.session_state.df is None or "GPT Kategorie" not in st.session_state.df:
