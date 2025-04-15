@@ -150,42 +150,10 @@ st.markdown(f'''
 # ➕ Aktives Modell anzeigen
 st.markdown(f"🔍 Aktives GPT-Modell: **{st.session_state.get('gpt_model', '–')}**")
 
-
-# Logout + Session-Reset
-#if st.sidebar.button("🚪 Logout"):
-#    sign_out()
-#    st.session_state.user = None
-#    st.session_state.openai_key = ""
-#    st.session_state.df = None  # ❌ Reset Hash
-#    st.rerun()
-
-
 # 🧠 API-Key einmalig setzen (gilt für Assistent + Kategorisierung + Score)
 if "openai_key" not in st.session_state:
     st.session_state.openai_key = ""
 
-# with st.sidebar.expander("🔑 OpenAI API Key eingeben"):
-#    st.session_state.openai_key = st.text_input("🔑 OpenAI API Key", type="password", label_visibility="collapsed")
-
-
-# ------------------- SIDEBAR -------------------
-#st.sidebar.title("📂 Navigation")
-#seiten = [
-#    "🔼 File-Upload",
-#    "🤖 Mapping",
-#    "📊 Rating",
-#    "📈 Charts",
-#    "📂 History",
-#    "📁 Report",
-#    "🧪 Mapping-Check",
-#    "🤖 Prompt Engineering",
-
-#]
-
-#if "seite" not in st.session_state:
-#    st.session_state.seite = seiten[0]
-
-#seite = st.sidebar.radio("Wähle eine Ansicht:", seiten, index=seiten.index(st.session_state.seite))
 
 # ------------------- Sidebar -------------------
 with st.sidebar:
@@ -293,7 +261,7 @@ if st.session_state.seite == "🔼 File-Upload":
             )
 
             # ZKP-Hash direkt anzeigen
-            st.markdown("🧾 <span style='font-size: 16px;'><b>Aktueller ZKP-Hash:</b></span>", unsafe_allow_html=True)
+            st.markdown("🧾 <span style='font-size: 16px;'><b>ZKP-Hash:</b></span>", unsafe_allow_html=True)
             st.code(zkp_hash, language="bash")
 
             # ✅ ZKP-Status prüfen & merken (nur beim Upload!)
@@ -708,15 +676,13 @@ Antworte **nur mit einem der Begriffe**.
             fehlende["GPT-Vorschlag"] = fehlende["GPT Kategorie"].apply(gpt_mapping_vorschlag)
             st.dataframe(fehlende[["GPT Kategorie", "GPT-Vorschlag"]])
 
-# ------------------- Floating Chat Assistent (PrimAI Agent basiert) -------------------
+# ------------------- Floating Chat Assistent (PrimAI Finanzassistent) -------------------
 
 import openai
 import sys
 import os
 import streamlit as st
 sys.path.append(os.path.abspath("."))
-
-from agent_router import get_prompt  # <- Wichtig: Import für Agenten-Prompt
 
 # 0. Sichtbarkeitszustände & Session-Vars initialisieren
 if "chatbox_visible" not in st.session_state:
@@ -725,8 +691,6 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "openai_key" not in st.session_state:
     st.session_state.openai_key = ""
-if "gpt_agent_role" not in st.session_state:
-    st.session_state.gpt_agent_role = "analyse"
 
 # 1. 💬 Floating-Button (sichtbar unten rechts, stabil mit Streamlit)
 st.markdown("""
@@ -740,7 +704,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Platzhalter für Floating-Button
 with st.container():
     if st.button("💬", key="toggle_chat_button"):
         st.session_state.chatbox_visible = not st.session_state.chatbox_visible
@@ -755,7 +718,7 @@ if st.session_state.chatbox_visible:
             bottom: 100px;
             right: 25px;
             width: 350px;
-            max-height: 420px;
+            max-height: 500px;
             overflow-y: auto;
             background-color: white;
             border: 1px solid #ccc;
@@ -770,8 +733,7 @@ if st.session_state.chatbox_visible:
 
         # Begrüßung
         with st.chat_message("assistant"):
-            agent_name = st.session_state.get("gpt_agent_role_name", "Analyse-Agent")
-            st.markdown(f"👋 Hallo! Ich bin dein PrimAI {agent_name}.")
+            st.markdown("👋 Hallo! Ich bin dein PrimAI Finanzassistent. Frag mich gerne zur Analyse oder zu deinen Ausgaben.")
 
         # Historie anzeigen
         for msg in st.session_state.chat_history:
@@ -787,24 +749,35 @@ if st.session_state.chatbox_visible:
             if not st.session_state.openai_key:
                 st.warning("🔑 Bitte gib deinen OpenAI API-Key ein.")
             else:
-                # Kontext aufbauen
-                context = ""
-                if st.session_state.get("df") is not None:
-                    df = st.session_state.df
-                    df_kurz = df[["datum", "beschreibung", "betrag", "GPT Kategorie"]].head(20).to_string()
-                    context = f"\nBeispiel-Transaktionen:\n{df_kurz}\n"
+                # ✅ Kontext aufbauen
+                context_parts = []
 
-                # Agentenprompt laden
-                prompt_base = get_prompt(st.session_state.gpt_agent_role)
-                full_prompt = f"{prompt_base.strip()}\n\n{context}\nFrage: {user_msg}"
+                # 🧾 1. Transaktionen (kompakt, aber mit allen Infos)
+                if st.session_state.get("df") is not None:
+                    df = st.session_state.df.copy()
+                    df_preview = df[["datum", "beschreibung", "betrag", "GPT Kategorie", "Gemappte Kategorie"]].head(15)
+                    df_str = df_preview.to_string(index=False)
+                    context_parts.append("📄 Beispiel-Transaktionen:\n" + df_str)
+
+                # 🧠 2. GPT-Analyse (Score)
+                if st.session_state.get("gpt_score"):
+                    context_parts.append("🧠 GPT-Analyse:\n" + st.session_state["gpt_score"])
+
+                # 📌 3. GPT-Empfehlung
+                if st.session_state.get("gpt_recommendation"):
+                    context_parts.append("📌 GPT-Empfehlungen:\n" + st.session_state["gpt_recommendation"])
+
+                # 📦 Finaler Kontext für GPT
+                context = "\n\n".join(context_parts)
+                system_prompt = "Du bist ein hilfreicher KI-Finanzassistent. Du kennst die Transaktionen, GPT-Kategorien, Analysen und Empfehlungen des Nutzers. Beantworte präzise Fragen dazu, hilf mit Einordnungen und bleib freundlich."
 
                 try:
                     client = openai.OpenAI(api_key=st.session_state.openai_key)
                     response = client.chat.completions.create(
                         model="gpt-4",
                         messages=[
-                            {"role": "system", "content": prompt_base},
-                            {"role": "user", "content": full_prompt}
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": f"{context}\n\nFrage: {user_msg}"}
                         ],
                         temperature=0.4
                     )
@@ -816,6 +789,7 @@ if st.session_state.chatbox_visible:
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # ------------------- Agentenanalyse -------------------
