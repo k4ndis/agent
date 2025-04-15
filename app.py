@@ -7,6 +7,7 @@ import pandas as pd
 import asyncio
 import matplotlib.pyplot as plt
 import datetime
+from streamlit_option_menu import option_menu
 
 
 st.set_page_config(page_title="PrimAI", layout="wide")
@@ -201,16 +202,35 @@ with st.sidebar:
 
         # 📁 Navigation
         
-        st.radio("", [
-            "🔼 File-Upload",
-            "🤖 Mapping",
-            "📊 Rating",
-            "📈 Charts",
-            "📂 History",
-            "📁 Report",
-            "🧪 Mapping-Check",
-            "🤖 Prompt Engineering"
-        ], key="seite")
+        st.session_state.seite = option_menu(
+            menu_title=None,
+            options=[
+                "🔼 File-Upload",
+                "🤖 Mapping",
+                "📊 Rating",
+                "📈 Charts",
+                "📂 History",
+                "📁 Report",
+                "🧪 Mapping-Check",
+                "🤖 Prompt Engineering"
+            ],
+            icons=["upload", "robot", "bar-chart", "activity", "folder", "file-earmark", "search", "cpu"],
+            default_index=0,
+            orientation="vertical",
+            styles={
+                "container": {"padding": "0!important", "background-color": "#111"},
+                "icon": {"color": "white", "font-size": "16px"},
+                "nav-link": {
+                    "font-size": "14px",
+                    "text-align": "left",
+                    "margin": "0px",
+                    "color": "white",
+                    "padding": "10px 15px"
+                },
+                "nav-link-selected": {"background-color": "#cc1f1a", "color": "white"},
+            }
+        )
+
 
     else:
         # 👤 Login/Registrierung

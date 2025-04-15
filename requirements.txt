@@ -5,3 +5,5 @@ openai>=1.10.0
 supabase
 plotly
 tiktoken
+streamlit-option-menu
+
