@@ -764,11 +764,22 @@ if st.session_state.chatbox_visible:
                 if st.session_state.get("df") is not None:
                     df = st.session_state.df.copy()
                     gpt_inputs = df["gpt_input"].tolist()
-                    max_eintraege = 200
-                    if len(gpt_inputs) > max_eintraege:
-                        context_parts.append(f"⚠️ Hinweis: Nur die letzten {max_eintraege} Transaktionen wurden übergeben.")
-                    gpt_input_block = "\n".join([str(i) for i in gpt_inputs[-max_eintraege:] if i])
-                    context_parts.append("📦 GPT-Input Transaktionen:\n" + gpt_input_block)
+                    # GPT Input dynamisch kürzen bei Bedarf
+                    max_input_tokens = 4000  # Reserve für Analyse, Empfehlungen, Prompt, Frage
+                    eintraege = []
+                    token_count = 0
+                    encoding = tiktoken.encoding_for_model("gpt-4")
+
+                    for eintrag in reversed(gpt_inputs):  # von hinten (neueste zuerst)
+                        tokens = len(encoding.encode(str(eintrag)))
+                        if token_count + tokens > max_input_tokens:
+                            break
+                        eintraege.append(str(eintrag))
+                        token_count += tokens
+
+                    eintraege.reverse()
+                    gpt_input_block = "\n".join(eintraege)
+                    context_parts.append(f"📦 GPT-Input Transaktionen (gekürzt auf {len(eintraege)} Einträge):\n" + gpt_input_block)
 
                 if st.session_state.get("gpt_score"):
                     context_parts.append("🧠 GPT-Analyse:\n" + st.session_state["gpt_score"])
