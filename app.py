@@ -759,7 +759,7 @@ if st.session_state.chatbox_visible:
                     max_eintraege = 200  # Kannst du später dynamisch machen
                     if len(gpt_inputs) > max_eintraege:
                         context_parts.append(f"⚠️ Hinweis: Nur die letzten {max_eintraege} Transaktionen wurden übergeben.")
-                    gpt_input_block = "\n".join(gpt_inputs[-max_eintraege:])
+                    gpt_input_block = "\n".join([str(i) for i in gpt_inputs[-max_eintraege:] if i])
                     context_parts.append("📦 GPT-Input Transaktionen:\n" + gpt_input_block)
 
                 if st.session_state.get("gpt_score"):
