@@ -12,31 +12,38 @@ from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="PrimAI", layout="wide")
 
-# AGENTEN-AUSWAHL (für GPT-Antwortverhalten) comment
-#AGENTEN = {
-#    "Analyse-Agent": "analyse",
-#    "Optimierungs-Agent": "optimierung",
-#    "Security-Agent": "security",
-#    "Compliance-Agent": "compliance"
-#}
+st.markdown("""
+<style>
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background-color: #ffffffee;
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.topbar-left {
+    display: flex;
+    align-items: center;
+}
+.topbar-left img {
+    height: 36px;
+    margin-right: 12px;
+}
+.topbar-right {
+    text-align: right;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+}
+</style>
+""", unsafe_allow_html=True)
 
-#if "gpt_agent_role" not in st.session_state:
-#    st.session_state.gpt_agent_role = "analyse"
 
-#st.sidebar.selectbox(
-#    "🧠 GPT-Agent wählen",
-#    options=list(AGENTEN.keys()),
-#    index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
-#    key="gpt_agent_role_name"
-#)
-
-# Agent-Code speichern
-#st.session_state.gpt_agent_role = AGENTEN[st.session_state.gpt_agent_role_name]
-
-
-#GPT_MODE = st.sidebar.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
-
-# ------------------- AUTHENTIFIZIERUNG -------------------
 if "user" not in st.session_state:
     st.session_state.user = None
 
@@ -138,14 +145,21 @@ if "last_saved" not in st.session_state:
 
 # ------------------- HEADER -------------------
 letzte_sync = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S") if st.session_state.last_saved else "–"
-st.markdown(f'''
-<div class="top-header">    
-    <div>
-        🔐 Eingeloggt als: <b>{st.session_state.user.email}</b><br>
+user_email = st.session_state.user.email
+
+st.markdown(f"""
+<div class="topbar">
+    <div class="topbar-left">
+        <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/PrimAI_logo.png" alt="PrimAI Logo">
+        <strong>PrimAI</strong>
+    </div>
+    <div class="topbar-right">
+        🔐 Eingeloggt als: <b>{user_email}</b><br>
         💾 Letzter Sync: <b>{letzte_sync}</b>
     </div>
 </div>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
+
 
 
 # ➕ Aktives Modell anzeigen
