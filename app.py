@@ -465,10 +465,49 @@ elif st.session_state.seite == "Rating":
         df = st.session_state.df
         api_key = st.text_input("🔑 OpenAI API Key eingeben", type="password")
         if api_key and st.button("Finanzverhalten analysieren"):
+            from openai import OpenAI
+            import json
+            import time
+
+            def chunk_list(data, chunk_size):
+                for i in range(0, len(data), chunk_size):
+                    yield data[i:i + chunk_size]
+
+            def analyze_with_chunking(transactions, chunk_size=50):
+                client = OpenAI(api_key=api_key)
+                results = []
+
+                for i, chunk in enumerate(chunk_list(transactions, chunk_size)):
+                    inputs = [{"betrag": t["betrag"], "GPT Kategorie": t.get("GPT Kategorie", ""), "beschreibung": t.get("gpt_input", "")} for t in chunk]
+                    chunk_data = json.dumps(inputs, indent=2)
+
+                    messages = [
+                        {"role": "system", "content": "Du bist ein Finanzanalyst. Bewerte diese Transaktionen auf Sparverhalten, Risiken und Score. Antworte mit #SPARQUOTE, #KREDITWÜRDIGKEIT, #RISIKO und #SCORE."},
+                        {"role": "user", "content": f"Teil {i+1}:\n{chunk_data}"}
+                    ]
+
+                    try:
+                        response = client.chat.completions.create(
+                            model=GPT_MODE,
+                            messages=messages,
+                            temperature=0.4,
+                            max_tokens=1400
+                        )
+                        results.append(response.choices[0].message.content.strip())
+                        time.sleep(1.5)
+                    except Exception as e:
+                        results.append(f"❌ Fehler bei Teil {i+1}: {e}")
+                        continue
+
+                return "\n\n".join(results)
+
             with st.spinner("PrimAI bewertet dein Finanzverhalten..."):
-                auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
+                df_dict = df.to_dict(orient="records")
+                auswertung = analyze_with_chunking(df_dict)
                 st.session_state["gpt_score"] = auswertung
+
             st.success("Rating abgeschlossen")
+
 
         # 🎯 Anzeige der gespeicherten Auswertung (auch nach Klick auf „Empfehlungen anzeigen“)
         if "gpt_score" in st.session_state:
@@ -482,18 +521,13 @@ elif st.session_state.seite == "Rating":
             score = re.search(r"#SCORE: (\d+)", text)
 
             if all([spar, kredit, risiko, score]):
-                # 💰 Einnahmen & Ausgaben berechnen
-                #gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
-                #gesamt_ausgaben = abs(df[df["betrag"] < 0]["betrag"].sum())
-
+               
                 # 🎯 Badges anzeigen inklusive Einnahmen & Ausgaben
                 render_score_badges(
                     spar.group(1),
                     kredit.group(1),
                     risiko.group(1),
-                    int(score.group(1)),
-                    #gesamt_einnahmen,
-                    #gesamt_ausgaben
+                    int(score.group(1)),                    
                 )
 
                 # 🧼 GPT-Text bereinigen (Hashtags entfernen)
