@@ -9,13 +9,13 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
 
     # Zusätzliche Info: Gesamteinnahmen und -ausgaben
-    gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
-    gesamt_ausgaben = df[df["betrag"] < 0]["betrag"].sum().abs()
+    #gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
+    #gesamt_ausgaben = abs(df[df["betrag"] < 0]["betrag"].sum())
 
-    zusatz_info = f"""
-    💰 Gesamteinnahmen: {gesamt_einnahmen:,.2f} €
-    💸 Gesamtausgaben: {gesamt_ausgaben:,.2f} €
-    """.strip()
+    #zusatz_info = f"""
+    #💰 Gesamteinnahmen: {gesamt_einnahmen:,.2f} €
+    #💸 Gesamtausgaben: {gesamt_ausgaben:,.2f} €
+    #""".strip()
 
     prompt = f"""
 Du bist eine KI zur Bewertung von Finanzverhalten.

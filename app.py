@@ -485,8 +485,8 @@ elif st.session_state.seite == "Rating":
 
             if all([spar, kredit, risiko, score]):
                 # 💰 Einnahmen & Ausgaben berechnen
-                gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
-                gesamt_ausgaben = abs(df[df["betrag"] < 0]["betrag"].sum())
+                #gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
+                #gesamt_ausgaben = abs(df[df["betrag"] < 0]["betrag"].sum())
 
                 # 🎯 Badges anzeigen inklusive Einnahmen & Ausgaben
                 render_score_badges(
@@ -494,8 +494,8 @@ elif st.session_state.seite == "Rating":
                     kredit.group(1),
                     risiko.group(1),
                     int(score.group(1)),
-                    gesamt_einnahmen,
-                    gesamt_ausgaben
+                    #gesamt_einnahmen,
+                    #gesamt_ausgaben
                 )
 
                 # 🧼 GPT-Text bereinigen (Hashtags entfernen)
