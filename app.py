@@ -442,6 +442,19 @@ elif st.session_state.seite == "Mapping":
             from importer import erstelle_hash_von_dataframe
             zkp_hash = erstelle_hash_von_dataframe(df)
 
+            from dag_manager import add_dag_step
+
+            # 🔁 Erzeuge DAG-Knoten für Mapping
+            step_input = {
+                "gpt_input": df["gpt_input"].tolist()
+            }
+            step_output = {
+                "gpt_kategorie": df["GPT Kategorie"].tolist(),
+                "mapped_kategorie": df["Gemappte Kategorie"].tolist()
+            }
+            add_dag_step("mapping", step_input, step_output, depends_on=[])
+
+
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
@@ -512,6 +525,21 @@ elif st.session_state.seite == "Rating":
             from importer import erstelle_hash_von_dataframe
             zkp_hash = erstelle_hash_von_dataframe(df)
 
+            # 🧠 Score-DAG-Knoten speichern
+            step_input = {
+                "gpt_input": df["gpt_input"].tolist(),
+                "categories": df["GPT Kategorie"].tolist()
+            }
+            step_output = {
+                "score": score.group(1),
+                "sparquote": spar.group(1),
+                "kreditwürdigkeit": kredit.group(1),
+                "risiko": risiko.group(1),
+                "explanation": bereinigt
+            }
+            add_dag_step("score", step_input, step_output, depends_on=["mapping"])  # oder die ID aus vorherigem Schritt
+
+
             save_report(
                 user_id=st.session_state.user.id,
                 date_range=f"{min_datum} - {max_datum}",
@@ -533,7 +561,7 @@ elif st.session_state.seite == "Rating":
             else:
                 st.warning("🔴 Noch nicht gespeichert.")
 
-
+# ------------------- Rating Empfehlungen -------------------
         # ✅ GPT Empfehlungen (sichtbar unabhängig von Score-Auswertung)
         if api_key and st.button("Empfehlungen anzeigen"):
             from gpt_kategorisierung import gpt_empfehlungen
