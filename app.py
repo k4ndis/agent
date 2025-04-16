@@ -375,7 +375,7 @@ if st.session_state.seite == "File-Upload":
             if st.session_state.zkp_hash_status == "verified":
                 st.success("✅ ZKP-Hash verified (bereits gespeichert)")
             else:
-                st.info("🟢 ZKP-Hash generiert und gespeichert")
+                st.info("ZKP-Hash generiert und gespeichert")
 
             st.dataframe(df)
 
@@ -402,7 +402,7 @@ if st.session_state.seite == "File-Upload":
 
             if st.session_state.last_saved:
                 letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
-                st.info(f"🟢 Zuletzt gespeichert: {letzte}")
+                st.info(f"Zuletzt gespeichert: {letzte}")
             else:
                 st.warning("🔴 Noch nicht gespeichert.")
         else:
@@ -453,7 +453,7 @@ elif st.session_state.seite == "Mapping":
             st.session_state.last_saved = datetime.datetime.now()
 
             letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
-            st.info(f"🟢 Zuletzt gespeichert: {letzte}")
+            st.info(f"Zuletzt gespeichert: {letzte}")
 
 
 # ------------------- Rating -------------------
@@ -519,7 +519,7 @@ elif st.session_state.seite == "Rating":
 
             if st.session_state.last_saved:
                 letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
-                st.info(f"🟢 Zuletzt gespeichert: {letzte}")
+                st.info(f"Zuletzt gespeichert: {letzte}")
             else:
                 st.warning("🔴 Noch nicht gespeichert.")
 
