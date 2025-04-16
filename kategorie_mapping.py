@@ -33,6 +33,7 @@ MAPPING = {
     # 🏥 Gesundheit & Fitness
     "arzt": "Gesundheit",
     "apotheke": "Gesundheit",
+    "shop apotheke": "Gesundheit",
     "klinik": "Gesundheit",
     "zahnarzt": "Gesundheit",
     "rezept": "Gesundheit",
@@ -69,6 +70,7 @@ MAPPING = {
     "tankstelle": "Mobilität",
     "tanken": "Mobilität",
     "fahrt": "Mobilität",
+    "parkhaus": "Mobilität",
     "parkgebühr": "Mobilität",
     "fahrkarte": "Mobilität",
     "flug": "Reisen",
@@ -83,6 +85,7 @@ MAPPING = {
     "mode": "Shopping",
     "onlineshopping": "Shopping",
     "versand": "Shopping",
+    "momento": "Shopping",
 
     # 🧾 Gebühren & Banktransaktionen
     "gebühr": "Gebühren",
@@ -91,6 +94,8 @@ MAPPING = {
     "überziehungszins": "Gebühren",
     "dispo": "Gebühren",
     "schufa": "Gebühren",
+    "saldenbestätigung": "Gebühren",
+    "abschluss": "Gebühren",
     "paypal": "Bankdienste",
     "klarna": "Bankdienste",
     "sofort": "Bankdienste",
@@ -105,6 +110,7 @@ MAPPING = {
     "atm": "Bargeld",
     "abhebung": "Bargeld",
     "bargeld": "Bargeld",
+    "bargeldauszahlung": "Bargeld",
 
     # 🧾 Versicherungen
     "versicherung": "Versicherungen",
@@ -115,6 +121,8 @@ MAPPING = {
     "hdi": "Versicherungen",
     "allianz": "Versicherungen",
     "ergo": "Versicherungen",
+    "krankenversicherung": "Versicherungen",
+    "private krankenversicherung": "Versicherungen",
 
     # 💼 Einkommen & Steuern
     "gehalt": "Einkommen",
@@ -123,6 +131,7 @@ MAPPING = {
     "rückzahlung": "Einkommen",
     "erstattung": "Einkommen",
     "bonus": "Einkommen",
+    "gutschrift": "Einkommen",
     "finanzamt": "Steuern",
     "steuer": "Steuern",
     "einkommensteuer": "Steuern",

@@ -429,7 +429,7 @@ elif st.session_state.seite == "Mapping":
             df["Gemappte Kategorie"] = df["GPT Kategorie"]  # identisch
 
             st.session_state.df = df
-            st.success("Mapping abgeschlossen.")
+            st.success("Mapping abgeschlossen")
             st.dataframe(df[["datum", "betrag", "gpt_input", "GPT Kategorie", "Gemappte Kategorie"]])
 
             # ✅ automatisch speichern nach Mapping

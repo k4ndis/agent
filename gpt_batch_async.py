@@ -42,12 +42,18 @@ Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
 - Strom, Gas, Telekom, Internet → Nebenkosten
 - Spotify, Netflix, Mobilfunkverträge → Abonnements
 - Amazon, Zalando, Ikea → Shopping
-- Geldeingang, Überweisung, Gehalt → Einkommen
+- Geldeingang, Überweisung, Gehalt, Gutschrift → Einkommen
 - Krankenkasse, Apotheke, Rezept → Gesundheit
 - Schufa, Kontoführung, Gebühren → Bankdienste oder Gebühren
 - Cashback, Vorschuss, Gutschrift → Einkommen
-- Mietzahlung, Überweisung für Wohnung → Wohnen
-- Wenn nicht eindeutig → Sonstiges
+- Mietzahlung, Miete, Dauerauftrag → Wohnen
+
+🔍 Erweiterte Hinweise für genauere Zuordnung:
+- Wenn mehrere Begriffe vorkommen (z. B. „Vertrag“ + „Krankenversicherung“), verwende die **spezifischste passende Kategorie**
+- Beispiel: "Private Krankenversicherung Vertrag" → **Versicherungen** (nicht Abonnements)
+- Berücksichtige bekannte Anbieter wie: **Allianz, Helvetia, Shop Apotheke, REWE, PayPal**
+- Begriffe wie **Gutschrift, Bargeld, Miete, Lohn** sind klare Indikatoren für bestimmte Kategorien
+- Wenn keine eindeutige Kategorie erkennbar ist → **Sonstiges**
 
 Gib nur eine Kategorie pro Zeile aus, in exakt der Reihenfolge der Transaktionen.
 
@@ -56,6 +62,7 @@ Transaktionen:
 
 Antwort: **Nur die Kategorien – eine pro Zeile**, ohne zusätzliche Erklärungen oder Nummerierungen.
 """
+
 
     # 🔐 Cache-Pfad vorbereiten
     CACHE_DIR = os.path.join(os.getcwd(), "cache")
