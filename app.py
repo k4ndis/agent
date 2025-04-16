@@ -773,16 +773,16 @@ if "openai_key" not in st.session_state:
 
 chat_history = st.session_state[chat_key]
 
-# ---------- Floating Chat-Button ----------
+# ---------- Floating Chat-Button (funktioniert mit Streamlit) ----------
 st.markdown("""
 <style>
-#floating-chat-btn {
+#custom-chat-button {
     position: fixed;
     bottom: 25px;
     right: 25px;
     z-index: 10000;
 }
-#floating-chat-btn button {
+button[title="Toggle Chat"] {
     background-color: white;
     border: 2px solid #ccc;
     border-radius: 50%;
@@ -791,17 +791,20 @@ st.markdown("""
     font-size: 24px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     cursor: pointer;
+    transition: 0.2s ease;
+}
+button[title="Toggle Chat"]:hover {
+    background-color: #f0f0f0;
 }
 </style>
-<div id="floating-chat-btn">
-    <form action="" method="post">
-        <button name="toggle_chat_button" type="submit">💬</button>
-    </form>
-</div>
+<div id="custom-chat-button"></div>
 """, unsafe_allow_html=True)
 
-if "toggle_chat_button" in st.session_state or st.session_state.get("chatbox_visible"):
-    st.session_state.chatbox_visible = not st.session_state.get("chatbox_visible", False)
+# Button anzeigen
+with st.container():
+    if st.button("💬", key="toggle_chat_btn", help="Toggle Chat", use_container_width=False):
+        st.session_state.chatbox_visible = not st.session_state.get("chatbox_visible", False)
+
 
 # ---------- Chatfenster ----------
 if st.session_state.chatbox_visible:
