@@ -531,12 +531,13 @@ elif st.session_state.seite == "Rating":
                 "categories": df["GPT Kategorie"].tolist()
             }
             step_output = {
-                "score": score.group(1),
-                "sparquote": spar.group(1),
-                "kreditwürdigkeit": kredit.group(1),
-                "risiko": risiko.group(1),
+                "score": score.group(1) if score else "–",
+                "sparquote": spar.group(1) if spar else "–",
+                "kreditwürdigkeit": kredit.group(1) if kredit else "–",
+                "risiko": risiko.group(1) if risiko else "–",
                 "explanation": bereinigt
             }
+
             add_dag_step("score", step_input, step_output, depends_on=["mapping"])  # oder die ID aus vorherigem Schritt
 
 
