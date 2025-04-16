@@ -20,7 +20,6 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     prompt = f"""
 Du bist eine KI zur Bewertung von Finanzverhalten.
 
-{zusatz_info}
 
 Ziel ist eine fundierte Analyse der Ausgabenstruktur und des Umgangs mit Finanzen. Nutze die Summen z. B. zur Beurteilung der Sparquote, der finanziellen Stabilität, möglicher Risiken oder der Kreditwürdigkeit.
 

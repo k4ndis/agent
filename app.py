@@ -12,7 +12,7 @@ import base64
 from pathlib import Path
 
 
-def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int, einnahmen: float = None, ausgaben: float = None):
+def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int,):
     def color(value, field):
         if field == "score":
             if score >= 80: return "badge-green"
@@ -28,9 +28,7 @@ def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int, ei
         <div class="badge {color(sparquote, 'score')}">💸 Sparquote: {sparquote}</div>
         <div class="badge {color(kredit, 'text')}">🏦 Kreditwürdigkeit: {kredit}</div>
         <div class="badge {color(risiko, 'text')}">⚠️ Risiko: {risiko}</div>
-        <div class="badge {color(score, 'score')}">📊 Score: {score}</div>
-         <div class="badge badge-blue">💰 Einnahmen: {einnahmen:,.2f} €</div>
-        <div class="badge badge-red">💸 Ausgaben: {ausgaben:,.2f} €</div>
+        <div class="badge {color(score, 'score')}">📊 Score: {score}</div>        
     </div>
     """, unsafe_allow_html=True)
 
