@@ -35,7 +35,12 @@ st.markdown("""
 }
 .topbar-left {
     display: flex;
-    align-items: center;
+    flex-direction: column;   
+    align-items: flex-start;  
+    justify-content: center;
+    line-height: 1.5;
+    font-size: 14px;
+    color: #333;
 }
 .topbar-left img {
     height: 36px;
