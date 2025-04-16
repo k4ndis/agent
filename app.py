@@ -486,7 +486,7 @@ elif st.session_state.seite == "Rating":
             if all([spar, kredit, risiko, score]):
                 # 💰 Einnahmen & Ausgaben berechnen
                 gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
-                gesamt_ausgaben = df[df["betrag"] < 0]["betrag"].sum().abs()
+                gesamt_ausgaben = abs(df[df["betrag"] < 0]["betrag"].sum())
 
                 # 🎯 Badges anzeigen inklusive Einnahmen & Ausgaben
                 render_score_badges(
