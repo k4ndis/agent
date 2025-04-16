@@ -773,7 +773,7 @@ if "openai_key" not in st.session_state:
 
 chat_history = st.session_state[chat_key]
 
-# ---------- Floating Chat-Button (funktioniert mit Streamlit) ----------
+# ---------- Floating Chat-Button (funktioniert mit Streamlit + Custom Input) ----------
 st.markdown("""
 <style>
 #custom-chat-button {
@@ -805,7 +805,6 @@ with st.container():
     if st.button("💬", key="toggle_chat_btn", help="Toggle Chat", use_container_width=False):
         st.session_state.chatbox_visible = not st.session_state.get("chatbox_visible", False)
 
-
 # ---------- Chatfenster ----------
 if st.session_state.chatbox_visible:
     st.markdown("""
@@ -824,6 +823,13 @@ if st.session_state.chatbox_visible:
         box-shadow: 0 0 15px rgba(0,0,0,0.2);
         border-radius: 12px;
     }
+    input#chat_input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+    }
     </style>
     <div id="chat-box">
     """, unsafe_allow_html=True)
@@ -837,9 +843,12 @@ if st.session_state.chatbox_visible:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Eingabe
-    user_msg = st.chat_input("Was möchtest du wissen?")
-    if user_msg:
+    # Eigene Input-Box
+    with st.form("chat_form", clear_on_submit=True):
+        user_msg = st.text_input("Nachricht eingeben:", key="chat_input")
+        submit_chat = st.form_submit_button("Senden")
+
+    if submit_chat and user_msg:
         st.chat_message("user").markdown(user_msg)
         chat_history.append({"role": "user", "content": user_msg})
 
