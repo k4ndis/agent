@@ -10,6 +10,7 @@ import datetime
 from streamlit_option_menu import option_menu
 import base64
 from pathlib import Path
+from dag_manager import get_dag
 
 
 def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int,):
@@ -396,7 +397,8 @@ if st.session_state.seite == "File-Upload":
                 mapped_categories=[],
                 gpt_score_text="",
                 model=GPT_MODE,
-                zkp_hash=zkp_hash
+                zkp_hash=zkp_hash,
+                dag_steps=get_dag()
             )
             st.session_state.last_saved = datetime.datetime.now()
 
@@ -448,7 +450,8 @@ elif st.session_state.seite == "Mapping":
                 mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text="",
                 model=GPT_MODE,
-                zkp_hash=zkp_hash
+                zkp_hash=zkp_hash,
+                dag_steps=get_dag()
             )
             st.session_state.last_saved = datetime.datetime.now()
 
@@ -517,7 +520,8 @@ elif st.session_state.seite == "Rating":
                 mapped_categories=df["Gemappte Kategorie"].tolist(),
                 gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ fix
                 model=GPT_MODE,
-                zkp_hash=zkp_hash
+                zkp_hash=zkp_hash,
+                dag_steps=get_dag()
             )
 
             st.success("Bericht wurde automatisch gespeichert.")
@@ -564,7 +568,8 @@ elif st.session_state.seite == "Rating":
                 gpt_score_text=st.session_state.get("gpt_score", ""),  # ✅ wichtig!
                 model=GPT_MODE,
                 gpt_recommendation=st.session_state.get("gpt_empfehlung", ""),
-                zkp_hash=zkp_hash
+                zkp_hash=zkp_hash,
+                dag_steps=get_dag()
 )
 
             st.success("Empfehlung wurde automatisch gespeichert.")
