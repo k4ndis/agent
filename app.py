@@ -12,7 +12,7 @@ import base64
 from pathlib import Path
 
 
-def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int):
+def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int, einnahmen: float = None, ausgaben: float = None):
     def color(value, field):
         if field == "score":
             if score >= 80: return "badge-green"
@@ -29,6 +29,8 @@ def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int):
         <div class="badge {color(kredit, 'text')}">🏦 Kreditwürdigkeit: {kredit}</div>
         <div class="badge {color(risiko, 'text')}">⚠️ Risiko: {risiko}</div>
         <div class="badge {color(score, 'score')}">📊 Score: {score}</div>
+         <div class="badge badge-blue">💰 Einnahmen: {einnahmen:,.2f} €</div>
+        <div class="badge badge-red">💸 Ausgaben: {ausgaben:,.2f} €</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -482,17 +484,25 @@ elif st.session_state.seite == "Rating":
             score = re.search(r"#SCORE: (\d+)", text)
 
             if all([spar, kredit, risiko, score]):
+                # 💰 Einnahmen & Ausgaben berechnen
+                gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
+                gesamt_ausgaben = df[df["betrag"] < 0]["betrag"].sum().abs()
+
+                # 🎯 Badges anzeigen inklusive Einnahmen & Ausgaben
                 render_score_badges(
                     spar.group(1),
                     kredit.group(1),
                     risiko.group(1),
-                    int(score.group(1))
+                    int(score.group(1)),
+                    gesamt_einnahmen,
+                    gesamt_ausgaben
                 )
-                # Entfernt die Hashtag-Zeile (inklusive Umbruch davor/nachher)
+
+                # 🧼 GPT-Text bereinigen (Hashtags entfernen)
                 bereinigt = re.sub(r"#SPARQUOTE:.*?#SCORE: \d+\s*", "", text, flags=re.DOTALL).strip()
                 st.markdown(bereinigt)
             else:
-                st.markdown(text)                
+                st.markdown(text)         
 
             
             # ✅ automatisch speichern nach GPT-Auswertung
