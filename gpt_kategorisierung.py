@@ -8,8 +8,21 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
 
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
 
+    # Zusätzliche Info: Gesamteinnahmen und -ausgaben
+    gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
+    gesamt_ausgaben = df[df["betrag"] < 0]["betrag"].sum().abs()
+
+    zusatz_info = f"""
+    💰 Gesamteinnahmen: {gesamt_einnahmen:,.2f} €
+    💸 Gesamtausgaben: {gesamt_ausgaben:,.2f} €
+    """.strip()
+
     prompt = f"""
 Du bist eine KI zur Bewertung von Finanzverhalten.
+
+{zusatz_info}
+
+Ziel ist eine fundierte Analyse der Ausgabenstruktur und des Umgangs mit Finanzen. Nutze die Summen z. B. zur Beurteilung der Sparquote, der finanziellen Stabilität, möglicher Risiken oder der Kreditwürdigkeit.
 
 Hier sind Transaktionen mit ihren GPT-Kategorien:
 
@@ -45,8 +58,8 @@ Erkläre in 2–3 kurzen Sätzen, wie du zu dieser Einschätzung kommst.
                 {"role": "system", "content": "Du bist ein Finanzanalyst für Kreditwürdigkeit."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1500,
-            temperature=0.4,
+            max_tokens=2000,
+            temperature=0.6,
             stream=True
         )
 
@@ -104,8 +117,8 @@ Bitte antworte in kurzen Absätzen mit klaren Tipps, ohne Fachjargon.
                 {"role": "system", "content": "Du bist ein smarter Finanz-Coach."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1000,
-            temperature=0.5
+            max_tokens=1500,
+            temperature=0.6
         )
         return response.choices[0].message.content.strip()
     except Exception as e:

@@ -473,14 +473,12 @@ elif st.session_state.seite == "Rating":
         # 🎯 Anzeige der gespeicherten Auswertung (auch nach Klick auf „Empfehlungen anzeigen“)
         if "gpt_score" in st.session_state:
             st.subheader("🧠 Analyse des Finanzverhaltens")
-            st.markdown(st.session_state["gpt_score"])
-
             import re
             text = st.session_state["gpt_score"]
 
             spar = re.search(r"#SPARQUOTE: (\d+%)", text)
-            kredit = re.search(r"#KREDITWÜRDIGKEIT: (.+)", text)
-            risiko = re.search(r"#RISIKO: (.+)", text)
+            kredit = re.search(r"#KREDITWÜRDIGKEIT: (\w+)", text)
+            risiko = re.search(r"#RISIKO: (\w+)", text)
             score = re.search(r"#SCORE: (\d+)", text)
 
             if all([spar, kredit, risiko, score]):
@@ -490,6 +488,23 @@ elif st.session_state.seite == "Rating":
                     risiko.group(1),
                     int(score.group(1))
                 )
+
+                # 💰 Einnahmen und Ausgaben visuell anzeigen
+                gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
+                gesamt_ausgaben = df[df["betrag"] < 0]["betrag"].sum().abs()
+
+                st.markdown(f"""
+                <div style="margin-top:1rem; font-size:16px;">
+                💰 <b>Gesamteinnahmen:</b> {gesamt_einnahmen:,.2f} €  
+                💸 <b>Gesamtausgaben:</b> {gesamt_ausgaben:,.2f} €
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Entfernt die Hashtag-Zeile (inklusive Umbruch davor/nachher)
+                bereinigt = re.sub(r"#SPARQUOTE:.*?#SCORE: \d+\s*", "", text, flags=re.DOTALL).strip()
+                st.markdown(bereinigt)
+            else:
+                st.markdown(text)                
 
             
             # ✅ automatisch speichern nach GPT-Auswertung
