@@ -35,12 +35,12 @@ st.markdown("""
 }
 .topbar-left {
     display: flex;
-    flex-direction: column;   
-    align-items: flex-start;  
-    justify-content: center;
-    line-height: 1.5;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;  /* Abstand zwischen den Blöcken */
     font-size: 14px;
     color: #333;
+    flex-wrap: wrap;
 }
 .topbar-left img {
     height: 36px;
@@ -162,12 +162,12 @@ user_email = st.session_state.user.email
 st.markdown(f"""
 <div class="topbar">
     <div class="topbar-left">
-        🔐 Eingeloggt als: <b>{user_email}</b><br>
-        💾 Letzter Sync: <b>{letzte_sync}</b><br>
-        🤖 Modell: <b>{st.session_state.get('gpt_model', '–')}</b>
+        <div>🔐 Eingeloggt als: <b>{user_email}</b></div>
+        <div>💾 Letzter Sync: <b>{letzte_sync}</b></div>
+        <div>🤖 Modell: <b>{st.session_state.get('gpt_model', '–')}</b></div>
     </div>
     <div class="topbar-right">
-        <!-- Optional: Platz für Buttons / Status / Logo später -->
+        <!-- Platz für weitere Buttons oder Infos -->
     </div>
 </div>
 """, unsafe_allow_html=True)
