@@ -7,19 +7,9 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     kategorien = df.get("GPT Kategorie", [])
 
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
-
-    # Zusätzliche Info: Gesamteinnahmen und -ausgaben
-    #gesamt_einnahmen = df[df["betrag"] > 0]["betrag"].sum()
-    #gesamt_ausgaben = abs(df[df["betrag"] < 0]["betrag"].sum())
-
-    #zusatz_info = f"""
-    #💰 Gesamteinnahmen: {gesamt_einnahmen:,.2f} €
-    #💸 Gesamtausgaben: {gesamt_ausgaben:,.2f} €
-    #""".strip()
-
+    
     prompt = f"""
 Du bist eine KI zur Bewertung von Finanzverhalten.
-
 
 Ziel ist eine fundierte Analyse der Ausgabenstruktur und des Umgangs mit Finanzen. Nutze die Summen z. B. zur Beurteilung der Sparquote, der finanziellen Stabilität, möglicher Risiken oder der Kreditwürdigkeit.
 
@@ -29,9 +19,11 @@ Hier sind Transaktionen mit ihren GPT-Kategorien:
 
 Bitte analysiere:
 1. Wie hoch ist der Anteil fixer Einnahmen (z.B. Lohn, Gehalt, Gutschrift)?
-1. Wie hoch ist der Anteil fixer Ausgaben (z. B. Miete, Abos, Versicherungen)?
-2. Welche Ausgaben erscheinen optional oder vermeidbar?
-3. Gibt es auffällige Muster wie viele Bestellungen, hohe Mobilitätskosten, Spontankäufe?
+2. Wie hoch sind die Einnahmen pro Monat im Durchschnitt?
+3. Wie hoch ist der Anteil fixer Ausgaben (z. B. Miete, Abos, Versicherungen)?
+4. Wie hoch sind die Ausgaben pro Monat im Durchschnitt?
+5. Welche Ausgaben erscheinen optional oder vermeidbar?
+6. Gibt es auffällige Muster wie viele Bestellungen, hohe Mobilitätskosten, Spontankäufe?
 
 Bewerte dieses Verhalten in Bezug auf:
 - Rücklagen (Sparquote)
