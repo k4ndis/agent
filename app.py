@@ -10,7 +10,7 @@ import datetime
 from streamlit_option_menu import option_menu
 import base64
 from pathlib import Path
-from dag_manager import get_dag
+from dag_manager import get_dag, add_dag_step
 
 
 def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int,):
@@ -365,7 +365,7 @@ if st.session_state.seite == "File-Upload":
             )
 
             # ZKP-Hash direkt anzeigen
-            st.markdown("🧾 <span style='font-size: 16px;'><b>ZKP-Hash:</b></span>", unsafe_allow_html=True)
+            st.markdown("<span style='font-size: 16px;'><b>ZKP-Hash:</b></span>", unsafe_allow_html=True)
             st.code(zkp_hash, language="bash")
 
             # ✅ ZKP-Status prüfen & merken (nur beim Upload!)
