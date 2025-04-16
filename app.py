@@ -11,6 +11,28 @@ from streamlit_option_menu import option_menu
 import base64
 from pathlib import Path
 
+
+def render_score_badges(sparquote: str, kredit: str, risiko: str, score: int):
+    def color(value, field):
+        if field == "score":
+            if score >= 80: return "badge-green"
+            elif score >= 50: return "badge-yellow"
+            else: return "badge-red"
+        elif value.lower() == "hoch": return "badge-red"
+        elif value.lower() == "mittel": return "badge-yellow"
+        elif value.lower() == "niedrig": return "badge-green"
+        return "badge-blue"
+
+    st.markdown(f"""
+    <div class="score-badges">
+        <div class="badge {color(sparquote, 'score')}">💸 Sparquote: {sparquote}</div>
+        <div class="badge {color(kredit, 'text')}">🏦 Kreditwürdigkeit: {kredit}</div>
+        <div class="badge {color(risiko, 'text')}">⚠️ Risiko: {risiko}</div>
+        <div class="badge {color(score, 'score')}">📊 Score: {score}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def get_base64_logo(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
@@ -18,6 +40,7 @@ def get_base64_logo(path):
 logo_base64 = get_base64_logo("PrimAI_logo.png")
 
 st.set_page_config(page_title="PrimAI", layout="wide")
+
 
 st.markdown("""
 <style>
@@ -52,6 +75,31 @@ st.markdown("""
     color: #333;
     line-height: 1.4;
 }
+</style>
+""", unsafe_allow_html=True)
+
+# Stil für Score-Badges (einmalig einfügen)
+st.markdown("""
+<style>
+.score-badges {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+.badge {
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.badge-green { background-color: #4CAF50; }
+.badge-yellow { background-color: #FFC107; }
+.badge-red { background-color: #F44336; }
+.badge-blue { background-color: #2196F3; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -426,6 +474,22 @@ elif st.session_state.seite == "Rating":
         if "gpt_score" in st.session_state:
             st.subheader("🧠 Analyse des Finanzverhaltens")
             st.markdown(st.session_state["gpt_score"])
+
+            import re
+            text = st.session_state["gpt_score"]
+
+            spar = re.search(r"#SPARQUOTE: (\d+%)", text)
+            kredit = re.search(r"#KREDITWÜRDIGKEIT: (.+)", text)
+            risiko = re.search(r"#RISIKO: (.+)", text)
+            score = re.search(r"#SCORE: (\d+)", text)
+
+            if all([spar, kredit, risiko, score]):
+                render_score_badges(
+                    spar.group(1),
+                    kredit.group(1),
+                    risiko.group(1),
+                    int(score.group(1))
+                )
 
             
             # ✅ automatisch speichern nach GPT-Auswertung
