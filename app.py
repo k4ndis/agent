@@ -195,8 +195,8 @@ with st.sidebar:
             st.session_state.zkp_hash = None
             st.rerun()
 
-        # 🔑 OpenAI API Key (sichtbar, kein Expander)
-        st.text_input("🔑 OpenAI API Key", type="password", key="openai_key")
+        # OpenAI API Key (sichtbar, kein Expander)
+        st.text_input("OpenAI API Key", type="password", key="openai_key")
 
         # 🤖 PrimAgent auswählen
         AGENTEN = {
@@ -210,7 +210,7 @@ with st.sidebar:
             st.session_state.gpt_agent_role = "analyse"
 
         st.selectbox(
-            "🧠 PrimAgent",
+            "PrimAgent",
             options=list(AGENTEN.keys()),
             index=list(AGENTEN.values()).index(st.session_state.gpt_agent_role),
             key="gpt_agent_role_name"
@@ -218,7 +218,7 @@ with st.sidebar:
         st.session_state.gpt_agent_role = AGENTEN[st.session_state.gpt_agent_role_name]
 
         # 🧠 GPT-Modell auswählen
-        GPT_MODE = st.selectbox("🤖 GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
+        GPT_MODE = st.selectbox("GPT-Modell wählen", ["gpt-3.5-turbo", "gpt-4-turbo"])
         st.session_state.gpt_model = GPT_MODE
 
         # 📁 Navigation    
@@ -773,7 +773,7 @@ if "openai_key" not in st.session_state:
 
 chat_history = st.session_state[chat_key]
 
-# Chat-Button
+# ---------- Floating Chat-Button ----------
 st.markdown("""
 <style>
 #floating-chat-btn {
@@ -782,123 +782,138 @@ st.markdown("""
     right: 25px;
     z-index: 10000;
 }
+#floating-chat-btn button {
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
 </style>
+<div id="floating-chat-btn">
+    <form action="" method="post">
+        <button name="toggle_chat_button" type="submit">💬</button>
+    </form>
+</div>
 """, unsafe_allow_html=True)
 
-with st.container():
-    if st.button("💬", key="toggle_chat_button"):
-        st.session_state.chatbox_visible = not st.session_state.chatbox_visible
+if "toggle_chat_button" in st.session_state or st.session_state.get("chatbox_visible"):
+    st.session_state.chatbox_visible = not st.session_state.get("chatbox_visible", False)
 
+# ---------- Chatfenster ----------
 if st.session_state.chatbox_visible:
-    with st.container():
-        st.markdown("""
-        <style>
-        #chat-box {
-            position: fixed;
-            bottom: 100px;
-            right: 25px;
-            width: 350px;
-            max-height: 500px;
-            overflow-y: auto;
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 15px;
-            z-index: 9999;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 12px;
-        }
-        </style>
-        <div id="chat-box">
-        """, unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    #chat-box {
+        position: fixed;
+        bottom: 90px;
+        right: 25px;
+        width: 370px;
+        max-height: 520px;
+        overflow-y: auto;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 15px;
+        z-index: 9999;
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 12px;
+    }
+    </style>
+    <div id="chat-box">
+    """, unsafe_allow_html=True)
 
-        with st.chat_message("assistant"):
-            st.markdown("👋 Hallo! Ich bin dein PrimAI Finanzassistent. Frag mich gerne zur Analyse oder zu deinen Ausgaben.")
+    # Begrüßung
+    with st.chat_message("assistant"):
+        st.markdown("👋 Hallo! Ich bin dein PrimAI Finanzassistent. Frag mich gerne zur Analyse oder zu deinen Ausgaben.")
 
-        for msg in chat_history:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+    # Verlauf anzeigen
+    for msg in chat_history:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-        user_msg = st.chat_input("Was möchtest du wissen?")
-        if user_msg:
-            st.chat_message("user").markdown(user_msg)
-            chat_history.append({"role": "user", "content": user_msg})
+    # Eingabe
+    user_msg = st.chat_input("Was möchtest du wissen?")
+    if user_msg:
+        st.chat_message("user").markdown(user_msg)
+        chat_history.append({"role": "user", "content": user_msg})
 
-            if not st.session_state.openai_key:
-                st.warning("🔑 Bitte gib deinen OpenAI API-Key ein.")
-            else:
-                context_parts = []
+        if not st.session_state.openai_key:
+            st.warning("🔑 Bitte gib deinen OpenAI API-Key ein.")
+        else:
+            context_parts = []
 
-                if st.session_state.get("df") is not None:
-                    df = st.session_state.df.copy()
-                    gpt_inputs = df["gpt_input"].tolist()
-                    # GPT Input dynamisch kürzen bei Bedarf
-                    max_input_tokens = 4000  # Reserve für Analyse, Empfehlungen, Prompt, Frage
-                    eintraege = []
-                    token_count = 0
-                    encoding = tiktoken.encoding_for_model("gpt-4")
+            # Daten sammeln
+            if st.session_state.get("df") is not None:
+                df = st.session_state.df.copy()
+                gpt_inputs = df["gpt_input"].tolist()
+                max_input_tokens = 4000
+                eintraege, token_count = [], 0
+                encoding = tiktoken.encoding_for_model("gpt-4")
 
-                    for eintrag in reversed(gpt_inputs):  # von hinten (neueste zuerst)
-                        tokens = len(encoding.encode(str(eintrag)))
-                        if token_count + tokens > max_input_tokens:
-                            break
-                        eintraege.append(str(eintrag))
-                        token_count += tokens
+                for eintrag in reversed(gpt_inputs):
+                    tokens = len(encoding.encode(str(eintrag)))
+                    if token_count + tokens > max_input_tokens:
+                        break
+                    eintraege.append(str(eintrag))
+                    token_count += tokens
 
-                    eintraege.reverse()
-                    gpt_input_block = "\n".join(eintraege)
-                    context_parts.append(f"📦 GPT-Input Transaktionen (gekürzt auf {len(eintraege)} Einträge):\n" + gpt_input_block)
+                eintraege.reverse()
+                gpt_input_block = "\n".join(eintraege)
+                context_parts.append(f"📦 GPT-Input Transaktionen (gekürzt auf {len(eintraege)} Einträge):\n" + gpt_input_block)
 
-                if st.session_state.get("gpt_score"):
-                    context_parts.append("🧠 GPT-Analyse:\n" + st.session_state["gpt_score"])
+            if st.session_state.get("gpt_score"):
+                context_parts.append("🧠 GPT-Analyse:\n" + st.session_state["gpt_score"])
+            if st.session_state.get("gpt_recommendation"):
+                context_parts.append("📌 GPT-Empfehlungen:\n" + st.session_state["gpt_recommendation"])
 
-                if st.session_state.get("gpt_recommendation"):
-                    context_parts.append("📌 GPT-Empfehlungen:\n" + st.session_state["gpt_recommendation"])
-
-                context = "\n\n".join(context_parts)
-                system_prompt = """
+            context = "\n\n".join(context_parts)
+            system_prompt = """
 Du bist ein hilfreicher KI-Finanzassistent. Du kennst die Originaldaten (gpt_input), GPT-Analysen und Empfehlungen des Nutzers.
 Beantworte alle Fragen dazu – auch zu Beträgen, Anteilen, Mustern, Risiken und Sparpotenzialen.
 Du darfst Summen berechnen und nachvollziehen, wie die Einschätzungen zustande kamen.
-                """.strip()
+            """.strip()
 
-                prompt_text = f"{system_prompt}\n\n{context}\n\nFrage: {user_msg}"
-                prompt_tokens = berechne_tokens(prompt_text, model="gpt-4")
+            prompt_text = f"{system_prompt}\n\n{context}\n\nFrage: {user_msg}"
+            prompt_tokens = berechne_tokens(prompt_text, model="gpt-4")
 
-                if prompt_tokens > 95000:
-                    st.warning(f"⚠️ Achtung: Dein Prompt ist sehr lang ({prompt_tokens} Tokens). GPT könnte abschneiden.")
+            if prompt_tokens > 95000:
+                st.warning(f"⚠️ Achtung: Dein Prompt ist sehr lang ({prompt_tokens} Tokens). GPT könnte abschneiden.")
 
-                try:
-                    client = openai.OpenAI(api_key=st.session_state.openai_key)
-                    response = client.chat.completions.create(
-                        model="gpt-4",
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": prompt_text}
-                        ],
-                        temperature=0.4
-                    )
-                    reply = response.choices[0].message.content.strip()
-                    completion_tokens = berechne_tokens(reply, model="gpt-4")
-                    gesamt_tokens = prompt_tokens + completion_tokens
-                    kosten_prompt = prompt_tokens / 1000 * 0.01
-                    kosten_completion = completion_tokens / 1000 * 0.03
-                    kosten_gesamt = kosten_prompt + kosten_completion
+            try:
+                client = openai.OpenAI(api_key=st.session_state.openai_key)
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt_text}
+                    ],
+                    temperature=0.4
+                )
+                reply = response.choices[0].message.content.strip()
+                completion_tokens = berechne_tokens(reply, model="gpt-4")
+                gesamt_tokens = prompt_tokens + completion_tokens
+                kosten_prompt = prompt_tokens / 1000 * 0.01
+                kosten_completion = completion_tokens / 1000 * 0.03
+                kosten_gesamt = kosten_prompt + kosten_completion
 
-                    with st.expander("🔍 Token- & Kostenübersicht", expanded=False):
-                        st.markdown(f"""
+                with st.expander("🔍 Token- & Kostenübersicht", expanded=False):
+                    st.markdown(f"""
 **📊 GPT-Nutzung (geschätzt):**
 
 - Prompt: {prompt_tokens} Tokens → ca. ${kosten_prompt:.4f}  
 - Antwort: {completion_tokens} Tokens → ca. ${kosten_completion:.4f}  
 - **Gesamt:** {gesamt_tokens} Tokens → **ca. ${kosten_gesamt:.4f}**
 """)
-                except Exception as e:
-                    reply = f"Fehler: {e}"
+            except Exception as e:
+                reply = f"Fehler: {e}"
 
-                st.chat_message("assistant").markdown(reply)
-                chat_history.append({"role": "assistant", "content": reply})
+            st.chat_message("assistant").markdown(reply)
+            chat_history.append({"role": "assistant", "content": reply})
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ------------------- Prompt Engineering -------------------
