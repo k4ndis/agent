@@ -488,9 +488,10 @@ elif st.session_state.seite == "Rating":
 
         # 🎯 Anzeige der gespeicherten Auswertung (auch nach Klick auf „Empfehlungen anzeigen“)
         if "gpt_score" in st.session_state:
-            st.subheader("🧠 Analyse des Finanzverhaltens")
+            st.subheader("Analyse des Finanzverhaltens")
             import re
             text = st.session_state["gpt_score"]
+            bereinigt = ""
 
             spar = re.search(r"#SPARQUOTE: (\d+%)", text)
             kredit = re.search(r"#KREDITWÜRDIGKEIT: (\w+)", text)
