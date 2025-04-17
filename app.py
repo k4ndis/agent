@@ -355,7 +355,7 @@ if st.session_state.seite == "File-Upload":
             import json
 
             st.download_button(
-                label="⬇️ input.json herunterladen",
+                label="⬇️ input.json download",
                 data=json.dumps({
                     "hash": hash_array,
                     "secret": secret_bytes
@@ -365,7 +365,7 @@ if st.session_state.seite == "File-Upload":
             )
 
             # ZKP-Hash direkt anzeigen
-            st.markdown("<span style='font-size: 16px;'><b>ZKP-Hash:</b></span>", unsafe_allow_html=True)
+            st.markdown("<span style='font-size: 16px;'><b>ZKP-Hash</b></span>", unsafe_allow_html=True)
             st.code(zkp_hash, language="bash")
 
             # ✅ ZKP-Status prüfen & merken (nur beim Upload!)
@@ -374,7 +374,7 @@ if st.session_state.seite == "File-Upload":
             st.session_state.zkp_hash_status = "verified" if is_verified else "generated"
 
             if st.session_state.zkp_hash_status == "verified":
-                st.success("✅ ZKP-Hash verified (bereits gespeichert)")
+                st.success("✅ ZKP-Hash verified")
             else:
                 st.info("ZKP-Hash generiert und gespeichert")
 
@@ -553,13 +553,12 @@ elif st.session_state.seite == "Rating":
                 zkp_hash=zkp_hash,
                 dag_steps=get_dag()
             )
-
-            st.success("Bericht wurde automatisch gespeichert.")
+            
             st.session_state.last_saved = datetime.datetime.now()
 
             if st.session_state.last_saved:
                 letzte = st.session_state.last_saved.strftime("%d.%m.%Y, %H:%M:%S")
-                st.info(f"Zuletzt gespeichert: {letzte}")
+                st.info(f"Bericht wurde automatisch gespeichert {letzte}")
             else:
                 st.warning("🔴 Noch nicht gespeichert.")
 
@@ -1037,7 +1036,7 @@ Du darfst Summen berechnen und nachvollziehen, wie die Einschätzungen zustande 
 elif st.session_state.seite == "Prompt Engineering":
     from gpt_agent import call_gpt_agent
 
-    st.header(f"🤖 PrimAI Analyse mit dem {st.session_state.get('gpt_agent_role_name', 'Analyse-Agent')}")
+    st.header(f"🤖 PrimAgent {st.session_state.get('gpt_agent_role_name', 'Analyse-Agent')}")
 
     st.subheader("📂 Optional: Lade eine Datei hoch mit Daten, die der Agent analysieren soll")
     uploaded_file = st.file_uploader("Datei hochladen (z. B. .csv, .txt)", type=["csv", "txt"])

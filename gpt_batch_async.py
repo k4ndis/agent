@@ -15,7 +15,7 @@ async def gpt_kategorien_batch_async(beschreibungen: list[str], api_key: str, mo
     prompt_template = """
 Du bist ein spezialisierter KI-Assistent für die Kategorisierung von Banktransaktionen in Deutschland.
 
-Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
+Ordne jede Transaktion **genau einer** der folgenden **21 Hauptkategorien** zu:
 
 - Lebensmittel
 - Mobilität
@@ -34,6 +34,9 @@ Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
 - Steuern
 - Spenden
 - Gesundheit
+- Fitness
+- Drogerie
+- Unterhaltung
 - Sonstiges
 
 ❗️Wichtige Hinweise:
@@ -42,7 +45,7 @@ Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
 - Strom, Gas, Telekom, Internet → Nebenkosten
 - Spotify, Netflix, Mobilfunkverträge → Abonnements
 - Amazon, Zalando, Ikea → Shopping
-- Geldeingang, Überweisung, Gehalt, Gutschrift → Einkommen
+- Lohn, Gehalt, Gutschrift → Einkommen
 - Krankenkasse, Apotheke, Rezept → Gesundheit
 - Schufa, Kontoführung, Gebühren → Bankdienste oder Gebühren
 - Cashback, Vorschuss, Gutschrift → Einkommen
@@ -54,6 +57,10 @@ Ordne jede Transaktion **genau einer** der folgenden **18 Hauptkategorien** zu:
 - Berücksichtige bekannte Anbieter wie: **Allianz, Helvetia, Shop Apotheke, REWE, PayPal**
 - Begriffe wie **Gutschrift, Bargeld, Miete, Lohn** sind klare Indikatoren für bestimmte Kategorien
 - Wenn keine eindeutige Kategorie erkennbar ist → **Sonstiges**
+- Begriffe wie "Entgeltabschluss", "Abrechnung", "Abschluss" stehen meist für Gebühren → Kategorie: **Gebühren**
+- "Private Krankenversicherung", "Krankenversicherung", "Versicherung" → **Versicherungen**, auch wenn "Vertrag" vorkommt
+- "Bargeldauszahlung", "Debitkarte", "ATM" → **Bargeld** oder **EC Karte**, je nach Kontext
+- Bei unbekannten Händlern in "Kartenzahlung" → **EC Karte**
 
 Gib nur eine Kategorie pro Zeile aus, in exakt der Reihenfolge der Transaktionen.
 
