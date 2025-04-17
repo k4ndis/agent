@@ -4,7 +4,6 @@ import datetime
 from supabase import create_client, Client
 import streamlit as st
 
-
 # Deine Supabase-Daten
 SUPABASE_URL = "https://hwbvflcbulikhyxpsvig.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3YnZmbGNidWxpa2h5eHBzdmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5NzMxMTEsImV4cCI6MjA1OTU0OTExMX0.DQkawHbnddGaXVjn4tKzMXmFdmW2zupnDe3TZuv6H4k"
@@ -22,14 +21,10 @@ def sign_up(email, password):
     return supabase.auth.sign_up({"email": email, "password": password})
 
 def sign_out():
-    # Supabase-Logout durchführen
     response = supabase.auth.sign_out()
-
-    # 🧹 SessionState aufräumen: Chatverlauf löschen
     for key in list(st.session_state.keys()):
         if key.startswith("chat_history_"):
             del st.session_state[key]
-
     return response
 
 def get_user():
@@ -39,7 +34,24 @@ def get_user():
         return None
 
 # ----------------------------- DB -----------------------------
-def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: list[str], mapped_categories: list[str], gpt_score_text: str, model: str, zkp_hash: str, gpt_recommendation: str = "", dag_steps: list[dict] = []):
+def save_report(user_id: str, date_range: str, raw_data, gpt_categories: list[str],
+                mapped_categories: list[str], gpt_score_text: str, model: str,
+                zkp_hash: str, gpt_recommendation: str = "", dag_steps: list[dict] = []):
+
+    # ✅ JSON-sichere Umwandlung – egal ob DataFrame oder Liste
+    if hasattr(raw_data, "to_json"):  # vermutlich DataFrame
+        try:
+            raw_data = json.loads(raw_data.fillna("").astype(str).to_json(orient="records"))
+        except Exception as e:
+            st.error(f"❌ Fehler beim Konvertieren von raw_data: {e}")
+            return
+    elif isinstance(raw_data, list):  # vermutlich schon dicts
+        try:
+            raw_data = json.loads(json.dumps(raw_data))
+        except Exception as e:
+            st.error(f"❌ Fehler beim Serialisieren von raw_data (list): {e}")
+            return
+
     payload = {
         "user_id": user_id,
         "date_range": date_range,
@@ -53,6 +65,15 @@ def save_report(user_id: str, date_range: str, raw_data: dict, gpt_categories: l
         "dag_steps": dag_steps,
         "created_at": datetime.datetime.now().isoformat()
     }
+
+    # 🔍 Sicherheitstest: JSON serialisierbar?
+    try:
+        json.dumps(payload)
+    except Exception as e:
+        st.error(f"❌ Fehler beim Serialisieren des gesamten Reports: {e}")
+        st.json(payload)
+        return
+
     return supabase.table("reports").insert(payload).execute()
 
 def load_reports(user_id: str):
@@ -64,12 +85,8 @@ def load_all_reports():
 def resend_confirmation_email(email):
     return supabase.auth.resend(email=email)
 
-
 # ----------------------------- Hash Verifizierung -----------------------------
 def is_hash_verified(user_id: str, zkp_hash: str) -> bool:
-    """
-    Prüft, ob der gegebene Hash bereits für diesen Nutzer in Supabase gespeichert ist.
-    """
     try:
         result = supabase.table("reports").select("zkp_hash").eq("user_id", user_id).execute()
         if result.data:
