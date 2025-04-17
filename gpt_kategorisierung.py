@@ -1,8 +1,8 @@
 from openai import OpenAI
 
 def berechne_einnahmen_ausgaben(df):
-    einnahmen = df[(df["GPT Kategorie"].str.lower() == "einkommen") & (df["Betrag"] > 0)]
-    ausgaben = df[(df["GPT Kategorie"].str.lower() != "einkommen") & (df["Betrag"] < 0)]
+    einnahmen = df[(df["GPT Kategorie"].str.lower() == "einkommen") & (df["betrag"] > 0)]
+    ausgaben = df[(df["GPT Kategorie"].str.lower() != "einkommen") & (df["betrag"] < 0)]
     return einnahmen, ausgaben
 
 def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
@@ -13,8 +13,8 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
 
     # ✅ Einnahmen & Ausgaben berechnen
     einnahmen_df, ausgaben_df = berechne_einnahmen_ausgaben(df)
-    einnahmen_summe = einnahmen_df["Betrag"].sum()
-    ausgaben_summe = abs(ausgaben_df["Betrag"].sum())  # weil negativ
+    einnahmen_summe = einnahmen_df["betrag"].sum()
+    ausgaben_summe = abs(ausgaben_df["betrag"].sum())  # weil negativ
 
     # ✅ Zusammenfassung + Beträge vorbereiten
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
