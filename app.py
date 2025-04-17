@@ -374,9 +374,9 @@ if st.session_state.seite == "File-Upload":
             st.session_state.zkp_hash_status = "verified" if is_verified else "generated"
 
             if st.session_state.zkp_hash_status == "verified":
-                st.success("✅ ZKP-Hash verified")
+                st.success("✅ ZKP-Hash verifiziert")
             else:
-                st.info("ZKP-Hash generiert und gespeichert")
+                st.info("ZKP-Hash generiert und gespeichert.")
 
             st.dataframe(df)
 
@@ -484,7 +484,7 @@ elif st.session_state.seite == "Rating":
             with st.spinner("PrimAI bewertet dein Finanzverhalten..."):
                 auswertung = gpt_score_auswertung(df, api_key, model=GPT_MODE)
                 st.session_state["gpt_score"] = auswertung
-            st.success("Rating abgeschlossen")
+            st.success("Rating abgeschlossen.")
 
         # 🎯 Anzeige der gespeicherten Auswertung (auch nach Klick auf „Empfehlungen anzeigen“)
         if "gpt_score" in st.session_state:

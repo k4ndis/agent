@@ -1,15 +1,31 @@
 from openai import OpenAI
 
+def berechne_einnahmen_ausgaben(df):
+    einnahmen = df[(df["GPT Kategorie"].str.lower() == "einkommen") & (df["Betrag"] > 0)]
+    ausgaben = df[(df["GPT Kategorie"].str.lower() != "einkommen") & (df["Betrag"] < 0)]
+    return einnahmen, ausgaben
+
 def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     client = OpenAI(api_key=api_key)
 
     beschreibungen = df["gpt_input"].tolist()
     kategorien = df.get("GPT Kategorie", [])
 
+    # ✅ Einnahmen & Ausgaben berechnen
+    einnahmen_df, ausgaben_df = berechne_einnahmen_ausgaben(df)
+    einnahmen_summe = einnahmen_df["Betrag"].sum()
+    ausgaben_summe = abs(ausgaben_df["Betrag"].sum())  # weil negativ
+
+    # ✅ Zusammenfassung + Beträge vorbereiten
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
-    
+
+    # ✅ Prompt mit echten Zahlen
     prompt = f"""
 Du bist eine KI zur Bewertung von Finanzverhalten.
+
+Die monatlichen Summen:
+- Einnahmen gesamt: {einnahmen_summe:.2f} €
+- Ausgaben gesamt: {ausgaben_summe:.2f} €
 
 Ziel ist eine fundierte Analyse der Ausgabenstruktur und des Umgangs mit Finanzen. Nutze die Summen z. B. zur Beurteilung der Sparquote, der finanziellen Stabilität, möglicher Risiken oder der Kreditwürdigkeit.
 
@@ -39,8 +55,6 @@ Bitte gib am Ende folgende Werte explizit aus:
 
 Erkläre in 2–3 kurzen Sätzen, wie du zu dieser Einschätzung kommst.
 """
-
-
 
     try:
         response = client.chat.completions.create(
