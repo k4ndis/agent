@@ -12,9 +12,13 @@ def gpt_score_auswertung(df, api_key: str, model: str = "gpt-4-turbo") -> str:
     kategorien = df.get("GPT Kategorie", [])
 
     # ✅ Einnahmen & Ausgaben berechnen
-    einnahmen_df, ausgaben_df = berechne_einnahmen_ausgaben(df)
-    einnahmen_summe = einnahmen_df["betrag"].sum()
-    ausgaben_summe = abs(ausgaben_df["betrag"].sum())  # weil negativ
+    def berechne_einnahmen_ausgaben(df):
+        # Stelle sicher, dass der Betrag float ist
+        df["betrag"] = df["betrag"].astype(float)
+
+        einnahmen = df[df["betrag"] > 0]
+        ausgaben = df[df["betrag"] < 0]
+        return einnahmen, ausgaben
 
     # ✅ Zusammenfassung + Beträge vorbereiten
     zusammenfassung = "\n".join([f"{b} → {k}" for b, k in zip(beschreibungen, kategorien)])
